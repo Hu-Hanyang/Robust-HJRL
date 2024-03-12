@@ -265,7 +265,7 @@ class BaseDistbEnv(gym.Env):
 
         """
 
-        # TODO: initialize random number generator with seed
+        # TODO: initialize random number generator with seed: does it be set while using SB3?
         # TODO: could add some randomization to initial conditions, done
 
         p.resetSimulation(physicsClientId=self.CLIENT)
@@ -364,8 +364,8 @@ class BaseDistbEnv(gym.Env):
                                                           physicsClientId=self.CLIENT
                                                           ) for i in range(self.NUM_DRONES)]
         #### Save, preprocess, and clip the action to the max. RPM #
-        else:  # TODO: check the function of _preprocessAction() with our former one 
-            clipped_action = np.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))
+        else:  # TODO: check the function of _preprocessAction() with our former one, done
+            clipped_action = np.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))  # clipped_action is the clipped RPMs
 
         #### Repeat for as many as the aggregate physics steps #####
         if self.distb_type == None:
@@ -556,6 +556,7 @@ class BaseDistbEnv(gym.Env):
                 self.ang_v[id] += np.random.uniform(-self.init_rp_vel_lim, self.init_rp_vel_lim, 3)
                 self.ang_v[id][2] = np.random.uniform(-self.init_y_vel_lim, self.init_y_vel_lim)
         #### Connect to PyBullet ###################################
+            # TODO: Need to check the correctness of the following code
             for id in range(self.NUM_DRONES):
                 p.resetBasePositionAndOrientation(self.DRONE_IDS[id], posObj=self.pos[id], ornObj=self.quat[id], physicsClientId=self.CLIENT)
                 R = np.array(p.getMatrixFromQuaternion(self.quat[id])).reshape(3, 3)

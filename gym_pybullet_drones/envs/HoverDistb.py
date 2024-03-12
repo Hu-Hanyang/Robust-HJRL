@@ -54,15 +54,6 @@ class HoverDistbEnv(BaseDistbRLEnv):
         """
         self.TARGET_POS = np.array([0,0,1])
         self.EPISODE_LEN_SEC = 8
-        # Set the limits for states
-        self.rp_limit = 60 * self.DEG2RAD  # rad
-        self.rpy_dot_limit = 300 * self.DEG2RAD  # rad/s
-        self.z_lim = 0.05  # m
-
-        # Set the penalties
-        self.penalty_action =1e-4
-        self.penalty_angle_rate = 1e-3
-        self.penalty_terminal = 1e2
 
         super().__init__(drone_model=drone_model,
                          num_drones=1,
@@ -78,6 +69,15 @@ class HoverDistbEnv(BaseDistbRLEnv):
                          obs=obs,
                          act=act
                          )
+        # Set the limits for states
+        self.rp_limit = 60 * self.DEG2RAD  # rad
+        self.rpy_dot_limit = 300 * self.DEG2RAD  # rad/s
+        self.z_lim = 0.05  # m
+
+        # Set the penalties
+        self.penalty_action =1e-4
+        self.penalty_angle_rate = 1e-3
+        self.penalty_terminal = 1e2
 
     ################################################################################
     
@@ -148,7 +148,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
             Whether the current episode timed out.
 
         """
-        state = self._getDroneStateVector(0)
+        # state = self._getDroneStateVector(0)
         # if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 # Truncate when the drone is too far away
         #      or abs(state[7]) > .4 or abs(state[8]) > .4 # Truncate when the drone is too tilted
         # ):

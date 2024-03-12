@@ -103,7 +103,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
     ################################################################################
 
     def _addObstacles(self):
-        # TODO: Need to defunction this?
+        # TODO: enclose this temporarily
         """Add obstacles to the environment.
 
         Only if the observation is of type RGB, 4 landmarks are added.
@@ -249,7 +249,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
     ################################################################################
 
     def _observationSpace(self):
-        #TODO: Resize the observation space
+        #TODO: Resize the observation space, done
         """Returns the observation space of the environment.
 
         Returns
@@ -264,12 +264,33 @@ class BaseDistbRLEnv(BaseDistbEnv):
                               shape=(self.NUM_DRONES, self.IMG_RES[1], self.IMG_RES[0], 4), dtype=np.uint8)
         elif self.OBS_TYPE == ObservationType.KIN:
             ############################################################
-            #### OBS SPACE OF SIZE 12
-            #### Observation vector ### X        Y        Z       Q1   Q2   Q3   Q4   R       P       Y       VX       VY       VZ       WX       WY       WZ
+            # #### OBS SPACE OF SIZE 12
+            # #### Observation vector ### X        Y        Z       Q1   Q2   Q3   Q4   R       P       Y       VX       VY       VZ       WX       WY       WZ
+            # lo = -np.inf
+            # hi = np.inf
+            # obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)])
+            # obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)])
+            # #### Add action buffer to observation space ################
+            # act_lo = -1
+            # act_hi = +1
+            # for i in range(self.ACTION_BUFFER_SIZE):
+            #     if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL]:
+            #         obs_lower_bound = np.hstack([obs_lower_bound, np.array([[act_lo,act_lo,act_lo,act_lo] for i in range(self.NUM_DRONES)])])
+            #         obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi,act_hi,act_hi,act_hi] for i in range(self.NUM_DRONES)])])
+            #     elif self.ACT_TYPE==ActionType.PID:
+            #         obs_lower_bound = np.hstack([obs_lower_bound, np.array([[act_lo,act_lo,act_lo] for i in range(self.NUM_DRONES)])])
+            #         obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi,act_hi,act_hi] for i in range(self.NUM_DRONES)])])
+            #     elif self.ACT_TYPE in [ActionType.ONE_D_RPM, ActionType.ONE_D_PID]:
+            #         obs_lower_bound = np.hstack([obs_lower_bound, np.array([[act_lo] for i in range(self.NUM_DRONES)])])
+            #         obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi] for i in range(self.NUM_DRONES)])])
+            
+            #### OBS SPACE OF SIZE 17
+            #### Observation vector ### pos, quat, rpy, vel, ang_v, last_clipped_action
             lo = -np.inf
             hi = np.inf
-            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)])
-            obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)])
+
+            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo, lo,lo,lo, lo,lo,lo, lo,lo,lo] for i in range(self.NUM_DRONES)])
+            obs_upper_bound = np.array([[hi,hi,hi, hi,hi,hi,hi, hi,hi,hi, hi,hi,hi, hi,hi,hi] for i in range(self.NUM_DRONES)])
             #### Add action buffer to observation space ################
             act_lo = -1
             act_hi = +1
