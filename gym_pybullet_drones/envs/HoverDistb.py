@@ -10,7 +10,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
     
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
-                 disturbance_type = None,
+                 disturbance_type = 'fixed',
                  distb_level: float=0.0,
                  initial_xyzs=None,
                  initial_rpys=None,
@@ -101,7 +101,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
         normed_clipped_a = 0.5 * (np.clip(clipped_action, -1, 1) + 1)
 
         penalty_action = self.penalty_action * np.linalg.norm(normed_clipped_a)
-        penalty_rpy_dot = self.penalty_angle_rate * np.linalg.norm(self.drone.rpy_dot)
+        penalty_rpy_dot = self.penalty_angle_rate * np.linalg.norm(state[13:16])
         penalty_terminal = self.penalty_terminal if self._computeTerminated() else 0.  # Hanyang: try larger crash penalty
 
         penalties = np.sum([penalty_action, penalty_rpy_dot, penalty_terminal])

@@ -19,3 +19,8 @@ register(
     id='multihover-aviary-v0',
     entry_point='gym_pybullet_drones.envs:MultiHoverAviary',
 )
+
+register(
+    id='hover-distb-v0',
+    entry_point='gym_pybullet_drones.envs:HoverDistbEnv',
+)

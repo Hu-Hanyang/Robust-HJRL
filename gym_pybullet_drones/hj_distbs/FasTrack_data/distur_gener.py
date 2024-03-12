@@ -1,19 +1,19 @@
-import heterocl as hcl
+# import heterocl as hcl
 import numpy as np
 import math
-import imp
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-import scipy.integrate
-import random
+# import imp
+# import matplotlib.pyplot as plt
+# import plotly.graph_objects as go
+# import scipy.integrate
+# import random
 
 from odp.computeGraphs.CustomGraphFunctions import my_abs
 from odp.Grid import Grid  # Utility functions to initialize the problem
 from odp.Shapes import *
-from odp.Plots import PlotOptions # Plot options
-from odp.solver import HJSolver  # Solver core
-from odp.solver import TTRSolver
-from scipy.integrate import solve_ivp
+# from odp.Plots import PlotOptions # Plot options
+# from odp.solver import HJSolver  # Solver core
+# from odp.solver import TTRSolver
+# from scipy.integrate import solve_ivp
 
 
 def distur_gener(states, disturbance):
@@ -152,7 +152,7 @@ def distur_gener(states, disturbance):
     umax = np.array([5.3*10**-3,  5.3*10**-3,  1.43*10**-4])  #TODO: experience?
     # dmax = 0*umax
     assert disturbance <= 3.0  # Hanyang: check the output content
-    V = np.load(f'phoenix_drone_simulation/adversarial_generation/FasTrack_data/fastrack_{disturbance}_15x15.npy')
+    V = np.load(f'gym_pybullet_drones/hj_distbs/FasTrack_data/fastrack_{disturbance}_15x15.npy')
     # if disturbance < 2:
     #     V = np.load(f'./adversarial_generation/FasTrack_data/fastrack_{disturbance}_15x15.npy')
     # else: 
@@ -206,29 +206,29 @@ def quat2euler(quat):
      
         return [roll_x, pitch_y, yaw_z] # in radians
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    roll_range = [-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1]
-    pitch_range = [-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1]
-    roll_rate = [-2.5,-2,-1.5,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.5,2,2.5]
-    pitch_rate = [-2.5,-2,-1.5,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.5,2,2.5]
+#     roll_range = [-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1]
+#     pitch_range = [-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1]
+#     roll_rate = [-2.5,-2,-1.5,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.5,2,2.5]
+#     pitch_rate = [-2.5,-2,-1.5,-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1,1.5,2,2.5]
 
-    disturbance = 1.5
+#     disturbance = 1.5
 
-    col = 15
-    initial = np.empty((col,6))
+#     col = 15
+#     initial = np.empty((col,6))
 
-    for i in range(col):
-        initial[i] = [random.choice(roll_range),random.choice(pitch_range),0,random.choice(roll_rate),random.choice(pitch_rate),0]
+#     for i in range(col):
+#         initial[i] = [random.choice(roll_range),random.choice(pitch_range),0,random.choice(roll_rate),random.choice(pitch_rate),0]
 
-    initial_nodu=np.unique(initial,axis=0)
+#     initial_nodu=np.unique(initial,axis=0)
 
-    for i in range(len(initial_nodu)):
+#     for i in range(len(initial_nodu)):
 
-        initial_point = initial_nodu[i]
+#         initial_point = initial_nodu[i]
     
-        [u,d] = distur_gener(initial_point,disturbance)
-        print (d)
+#         [u,d] = distur_gener(initial_point,disturbance)
+#         print (d)
 
 
 

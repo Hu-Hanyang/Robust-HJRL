@@ -16,7 +16,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
                  num_drones: int=1,
-                 disturbance_type = None,
+                 disturbance_type = 'fixed',
                  distb_level: float=0.0,
                  neighbourhood_radius: float=np.inf,
                  initial_xyzs=None,
@@ -67,7 +67,9 @@ class BaseDistbRLEnv(BaseDistbEnv):
 
         """
         #### Create a buffer for the last 0.5 sec of actions ########
-        self.ACTION_BUFFER_SIZE = int(ctrl_freq//2)
+        # self.ACTION_BUFFER_SIZE = int(ctrl_freq//2)
+        self.ACTION_BUFFER_SIZE = 1
+
         self.action_buffer = deque(maxlen=self.ACTION_BUFFER_SIZE)
         ####
         vision_attributes = True if obs == ObservationType.RGB else False

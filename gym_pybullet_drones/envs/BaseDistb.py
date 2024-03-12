@@ -27,7 +27,7 @@ class BaseDistbEnv(gym.Env):
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
                  num_drones: int=1,
-                 disturbance_type = None,
+                 disturbance_type = 'fixed',
                  distb_level: float=0.0,
                  neighbourhood_radius: float=np.inf,
                  initial_xyzs=None,
@@ -395,7 +395,7 @@ class BaseDistbEnv(gym.Env):
                 current_angles = quat2euler(self._getDroneStateVector(i)[3:7])
                 current_angle_rates = self._getDroneStateVector(i)[13:16]
                 current_state = np.concatenate((current_angles, current_angle_rates), axis=0)
-                _, disturbances = distur_gener(current_state, self.disturbance_level)
+                _, disturbances = distur_gener(current_state, self.distb_level)
 
                 if self.PHYSICS == Physics.PYB:
                     self._physics(clipped_action[i, :], disturbances, i)

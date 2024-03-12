@@ -1,13 +1,12 @@
-"""Script demonstrating the use of `gym_pybullet_drones`'s Gymnasium interface.
+"""Training the CrazyFlie in environments with heterogeneous disturbances based on the PPO algorithm.
 
-Classes HoverAviary and MultiHoverAviary are used as learning envs for the PPO algorithm.
+The original code repository is https://github.com/utiasDSL/gym-pybullet-drones. 
 
 Example
 -------
 In a terminal, run as:
 
     $ python learn.py --multiagent false
-    $ python learn.py --multiagent true
 
 Notes
 -----
@@ -50,19 +49,22 @@ DEFAULT_DISTURBANCE_LEVEL = 0.0
 def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEVEL, multiagent=DEFAULT_MA, output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_GUI, plot=True, colab=DEFAULT_COLAB, record_video=DEFAULT_RECORD_VIDEO, local=True):
     
     if distb_type == 'fixed' or None:
-        filename = os.path.join('fixed'+'-'+distb_level+output_folder, 'save-'+datetime.now().strftime("%m.%d.%Y_%H.%M"))
-    else:
-        filename = os.path.join(distb_type+output_folder, 'save-'+datetime.now().strftime("%m.%d.%Y_%H.%M"))
+        filename = os.path.join('traning_results/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+    else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
+        filename = os.path.join('traning_results/' + distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
 
+    #### Create the environment ################################
+    # hover_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level, obs=DEFAULT_OBS, act=DEFAULT_ACT)
+
     if not multiagent:
-        train_env = make_vec_env(HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level),
+        train_env = make_vec_env(HoverDistbEnv,
                                  env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
                                  n_envs=1,
                                  seed=0
                                  )
-        eval_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level, obs=DEFAULT_OBS, act=DEFAULT_ACT)
+        eval_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level,obs=DEFAULT_OBS, act=DEFAULT_ACT)
     else:
         train_env = make_vec_env(MultiHoverAviary,
                                  env_kwargs=dict(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT),
@@ -142,6 +144,7 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
                                         act=DEFAULT_ACT,
                                         record=record_video)
         test_env_nogui = MultiHoverAviary(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT)
+        
     logger = Logger(logging_freq_hz=int(test_env.CTRL_FREQ),
                 num_drones=DEFAULT_AGENTS if multiagent else 1,
                 output_folder=output_folder,
