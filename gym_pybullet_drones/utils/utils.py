@@ -52,3 +52,20 @@ def str2bool(val):
         return False
     else:
         raise argparse.ArgumentTypeError("[ERROR] in str2bool(), a Boolean value is expected")
+
+
+################################################################################
+    
+def Boltzmann(low=0.0, high=2.1, accuracy=0.1):
+    energies = np.array(np.arange(low, high, accuracy))  # Example energy levels
+    beta = 1.0  # Inverse temperature (1/kT)
+
+    # Calculate Boltzmann weights
+    weights = np.exp(-beta * energies)
+
+    # Normalize to get probabilities
+    probabilities = weights / np.sum(weights)
+
+    # Generate random samples from the Boltzmann distribution
+    random_state = np.around(np.random.choice(energies, p=probabilities), 1)  
+    return random_state
