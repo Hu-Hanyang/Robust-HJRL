@@ -61,7 +61,7 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
     if not multiagent:
         train_env = make_vec_env(HoverDistbEnv,
                                  env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
-                                 n_envs=1,
+                                 n_envs=16,
                                  seed=0
                                  )
         eval_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level,obs=DEFAULT_OBS, act=DEFAULT_ACT)
