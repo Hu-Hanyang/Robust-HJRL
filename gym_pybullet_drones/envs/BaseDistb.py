@@ -802,12 +802,12 @@ class BaseDistbEnv(gym.Env):
                               flags=p.LINK_FRAME,
                               physicsClientId=self.CLIENT
                               )
-        p.applyExternalTorque(self.DRONE_IDS[nth_drone],
-                              4,
-                              torqueObj=[0, 0, disturbances[2]],
-                              flags=p.LINK_FRAME,
-                              physicsClientId=self.CLIENT
-                              )
+        # p.applyExternalTorque(self.DRONE_IDS[nth_drone],
+        #                       4,
+        #                       torqueObj=[0, 0, disturbances[2]],
+        #                       flags=p.LINK_FRAME,
+        #                       physicsClientId=self.CLIENT
+        #                       )
 
     ################################################################################
 
