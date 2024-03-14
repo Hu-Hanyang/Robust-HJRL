@@ -287,12 +287,12 @@ class BaseDistbRLEnv(BaseDistbEnv):
             #         obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi] for i in range(self.NUM_DRONES)])])
             
             #### OBS SPACE OF SIZE 17
-            #### Observation vector ### pos, quat, rpy, vel, ang_v, last_clipped_action
+            #### Observation vector ### pos, quat, vel, ang_v, last_clipped_action
             lo = -np.inf
             hi = np.inf
 
-            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo, lo,lo,lo, lo,lo,lo, lo,lo,lo] for i in range(self.NUM_DRONES)])
-            obs_upper_bound = np.array([[hi,hi,hi, hi,hi,hi,hi, hi,hi,hi, hi,hi,hi, hi,hi,hi] for i in range(self.NUM_DRONES)])
+            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo, lo,lo,lo, lo,lo,lo] for i in range(self.NUM_DRONES)])
+            obs_upper_bound = np.array([[hi,hi,hi, hi,hi,hi,hi, hi,hi,hi, hi,hi,hi] for i in range(self.NUM_DRONES)])
             #### Add action buffer to observation space ################
             act_lo = -1
             act_hi = +1
@@ -320,7 +320,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
         Returns
         -------
         ndarray
-            A Box() of shape (NUM_DRONES,H,W,4) or (NUM_DRONES,12) depending on the observation type.
+            A Box() of shape (NUM_DRONES,H,W,4) or (NUM_DRONES,12) or (NUM_DRONES,17) depending on the observation type.
 
         """
         if self.OBS_TYPE == ObservationType.RGB:
@@ -341,7 +341,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
             ############################################################
             #### OBS SPACE OF SIZE 12, 17
             # obs_12 = np.zeros((self.NUM_DRONES,12))
-            obs_17 = np.zeros((self.NUM_DRONES,17))
+            obs_17 = np.zeros((self.NUM_DRONES, 17))
             for i in range(self.NUM_DRONES):
                 #obs = self._clipAndNormalizeState(self._getDroneStateVector(i))
                 obs = self._getDroneStateVector(i)  # state.shape = (20,), state = np.array(pos, quat, rpy, vel, ang_v, last_clipped_action)

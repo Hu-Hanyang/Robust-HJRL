@@ -33,12 +33,13 @@ from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
 DEFAULT_GUI = True
-DEFAULT_RECORD_VIDEO = False
+DEFAULT_RECORD_VIDEO = True
 DEFAULT_OUTPUT_FOLDER = '_results'
 DEFAULT_COLAB = False
 
 DEFAULT_OBS = ObservationType('kin') # 'kin' or 'rgb'
-DEFAULT_ACT = ActionType('one_d_rpm') # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'
+# DEFAULT_ACT = ActionType('one_d_rpm') # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'  #TODO: check here!
+DEFAULT_ACT = ActionType('rpm') # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid'  #TODO: check here!
 DEFAULT_AGENTS = 2
 DEFAULT_MA = False
 
@@ -46,7 +47,9 @@ DEFAULT_DISTURBANCE_TYPE = 'fixed'
 assert DEFAULT_DISTURBANCE_TYPE in ['fixed', 'boltzmann', 'random', 'rarl', 'rarl-population']
 DEFAULT_DISTURBANCE_LEVEL = 0.0
 
-def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEVEL, multiagent=DEFAULT_MA, output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_GUI, plot=True, colab=DEFAULT_COLAB, record_video=DEFAULT_RECORD_VIDEO, local=True):
+def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEVEL, multiagent=DEFAULT_MA, 
+        output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_GUI, plot=True, colab=DEFAULT_COLAB, 
+        record_video=DEFAULT_RECORD_VIDEO, local=True):
     
     if distb_type == 'fixed' or None:
         filename = os.path.join('traning_results/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
@@ -80,7 +83,7 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
     #### Train the model #######################################
     model = PPO('MlpPolicy',
                 train_env,
-                # tensorboard_log=filename+'/tb/',
+                tensorboard_log=filename+'/tb/',
                 verbose=1)
 
     #### Target cumulative rewards (problem-dependent) ##########
@@ -98,6 +101,8 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
                                  eval_freq=int(1000),
                                  deterministic=True,
                                  render=False)
+    
+    #### Train the model #######################################
     model.learn(total_timesteps=int(1e7) if local else int(1e2), # shorter training in GitHub Actions pytest
                 callback=eval_callback,
                 log_interval=100)

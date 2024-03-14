@@ -30,6 +30,7 @@ from gym_pybullet_drones.envs.HoverDistb import HoverDistbEnv
 env = HoverDistbEnv(disturbance_type='fixed', distb_level=1.0)
 print(env.ACTION_BUFFER_SIZE)
 print(env.distb_level)
+print(env.observation_space)
 init_obs, init_info = env.reset()
 
 print(init_obs.shape)
