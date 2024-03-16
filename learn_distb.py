@@ -81,6 +81,7 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
     print('[INFO] Observation space:', train_env.observation_space)
 
     #### Train the model #######################################
+    #TODO: Check the hyperparamters with the former settings!!!
     model = PPO('MlpPolicy',
                 train_env,
                 tensorboard_log=filename+'/tb/',

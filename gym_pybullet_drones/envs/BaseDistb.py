@@ -216,6 +216,7 @@ class BaseDistbEnv(gym.Env):
                                                             farVal=1000.0
                                                             )
         #### Set initial poses #####################################
+        #TODO: Check the initilaiztions here!!!!!! could we initialize the (0,0,1) here directlt?
         if initial_xyzs is None:
             self.INIT_XYZS = np.vstack([np.array([x*4*self.L for x in range(self.NUM_DRONES)]), \
                                         np.array([y*4*self.L for y in range(self.NUM_DRONES)]), \
@@ -631,8 +632,15 @@ class BaseDistbEnv(gym.Env):
             to understand its format.
 
         """
+        action = ((self.last_clipped_action[nth_drone, :] / self.HOVER_RPM) - 1) / 0.05
+        
+        # for k in range(action.shape[0]):
+        #     target = action[k, :]
+        #     if self.ACT_TYPE == ActionType.RPM:
+        #         rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))
+        
         state = np.hstack([self.pos[nth_drone, :], self.quat[nth_drone, :], self.rpy[nth_drone, :],
-                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], self.last_clipped_action[nth_drone, :]])
+                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], action])
         return state.reshape(20,)
 
     ################################################################################

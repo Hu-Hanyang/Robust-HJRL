@@ -1,5 +1,7 @@
 import numpy as np
 from gym_pybullet_drones.envs.HoverDistb import HoverDistbEnv
+from gym_pybullet_drones.envs.HoverAviary import HoverAviary
+from stable_baselines3.common.env_checker import check_env
 
 # distb_type = "aixed"
 # if distb_type not in [None, 'fixed', 'boltzmann', 'random', 'rarl', 'rarl-population']:
@@ -28,9 +30,13 @@ from gym_pybullet_drones.envs.HoverDistb import HoverDistbEnv
 # print(pos)
 
 env = HoverDistbEnv(disturbance_type='fixed', distb_level=1.0)
-print(env.ACTION_BUFFER_SIZE)
-print(env.distb_level)
-print(env.observation_space)
-init_obs, init_info = env.reset()
+check_env(env)
+# print(env.ACTION_BUFFER_SIZE)
+# print(env.distb_level)
+# print(env.observation_space)
+# init_obs, init_info = env.reset()
 
-print(init_obs.shape)
+# print(init_obs.shape)
+
+# standard_env = HoverAviary()
+# check_env(standard_env)

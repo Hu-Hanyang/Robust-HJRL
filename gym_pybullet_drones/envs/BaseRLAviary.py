@@ -274,7 +274,7 @@ class BaseRLAviary(BaseAviary):
                 elif self.ACT_TYPE in [ActionType.ONE_D_RPM, ActionType.ONE_D_PID]:
                     obs_lower_bound = np.hstack([obs_lower_bound, np.array([[act_lo] for i in range(self.NUM_DRONES)])])
                     obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi] for i in range(self.NUM_DRONES)])])
-            return spaces.Box(low=obs_lower_bound, high=obs_upper_bound, dtype=np.float32)
+            return spaces.Box(low=obs_lower_bound, high=obs_upper_bound, dtype=np.float64)
             ############################################################
         else:
             print("[ERROR] in BaseRLAviary._observationSpace()")

@@ -10,7 +10,7 @@ Tested on Intel x64/Ubuntu 18.04.
 git clone git@github.com:Hu-Hanyang/gym-pybullet-drones.git
 cd gym-pybullet-drones/
 
-conda env create -f environment.yml
+conda env create -f environment.yml  # now the packages in the environment.yml have conflicts, please install odp env first and then install other required packegs in the drone env.
 conda activate drones
 
 pip3 install --upgrade pip
