@@ -64,7 +64,7 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
     if not multiagent:
         train_env = make_vec_env(HoverDistbEnv,
                                  env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
-                                 n_envs=16,
+                                 n_envs=32,
                                  seed=0
                                  )
         eval_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level,obs=DEFAULT_OBS, act=DEFAULT_ACT)
@@ -82,8 +82,13 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
 
     #### Train the model #######################################
     #TODO: Check the hyperparamters with the former settings!!!
+    policy_kwargs = dict(net_arch=[dict(pi=[50, 50], vf=[64, 64])], policy_activation="relu", value_activation="tanh", log_std_init=-1.5)
     model = PPO('MlpPolicy',
                 train_env,
+                batch_size=16,
+                n_steps=1000,
+                target_kl=0.01,
+                policy_kwargs=policy_kwargs,
                 tensorboard_log=filename+'/tb/',
                 verbose=1)
 
