@@ -194,9 +194,11 @@ class BaseDistbRLEnv(BaseDistbEnv):
             commanded to the 4 motors of each drone.
 
         """
+        #TODO: MICHAEL MODIFICATION for using the CleanRL library
+        action = np.atleast_2d(action)
+        # MICHAEL MODIFICATION
+
         self.action_buffer.append(action)
-        #TODO: Hanyang: try to clip the action to -1, 1 here, not sure correct or not
-        # action = np.clip(action, -1, 1)
         rpm = np.zeros((self.NUM_DRONES,4))
         for k in range(action.shape[0]):
             target = action[k, :]

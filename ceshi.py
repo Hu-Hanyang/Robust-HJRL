@@ -62,11 +62,11 @@ import torch.nn as nn
 
 
 env = HoverDistbEnv(disturbance_type='fixed', distb_level=1.0)
-check_env(env)
+
 # print(env.ACTION_BUFFER_SIZE)
 # print(env.distb_level)
 # print(env.observation_space)
-# print(env.action_space)
+print(env.action_space)
 # init_obs, init_info = env.reset()
 # print(env.pos)
 

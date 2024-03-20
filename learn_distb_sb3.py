@@ -52,9 +52,9 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
         record_video=DEFAULT_RECORD_VIDEO, local=True):
     
     if distb_type == 'fixed' or None:
-        filename = os.path.join('traning_results/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+        filename = os.path.join('traning_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('traning_results/' + distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        filename = os.path.join('traning_results_sb3/' + distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
 
@@ -79,14 +79,13 @@ def run(distb_type=DEFAULT_DISTURBANCE_TYPE, distb_level=DEFAULT_DISTURBANCE_LEV
     #### Check the environment's spaces ########################
     print('[INFO] Action space:', train_env.action_space)
     print('[INFO] Observation space:', train_env.observation_space)
-
     #### Train the model #######################################
     #TODO: Check the hyperparamters with the former settings!!!
     policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[50, 50], vf=[64, 64]), log_std_init=-1.5)
     model = PPO('MlpPolicy',
                 train_env,
-                batch_size=16,
-                n_steps=1000,
+                batch_size=64,
+                n_steps=2048,
                 seed=40226,
                 target_kl=0.01,
                 policy_kwargs=policy_kwargs,
