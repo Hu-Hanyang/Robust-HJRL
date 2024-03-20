@@ -633,7 +633,10 @@ class BaseDistbEnv(gym.Env):
             to understand its format.
 
         """
-        action = ((self.last_clipped_action[nth_drone, :] / self.HOVER_RPM) - 1) / 0.05
+        if self.last_clipped_action[nth_drone, :].all() != 0:
+            action = ((self.last_clipped_action[nth_drone, :] / self.HOVER_RPM) - 1) / 0.05
+        else:
+            action = np.zeros(4)
         # self.last_clipped_action = clipped_action = p.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))
         # rpm = np.zeros((self.NUM_DRONES,4))
         # for k in range(action.shape[0]):
@@ -641,9 +644,8 @@ class BaseDistbEnv(gym.Env):
         #     if self.ACT_TYPE == ActionType.RPM:
         #         rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))
 
-        
         state = np.hstack([self.pos[nth_drone, :], self.quat[nth_drone, :], self.rpy[nth_drone, :],
-                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], self.last_clipped_action[nth_drone, :]])
+                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], action])
         return state.reshape(20,)
 
     ################################################################################
