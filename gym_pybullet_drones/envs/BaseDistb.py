@@ -520,7 +520,8 @@ class BaseDistbEnv(gym.Env):
         self.last_clipped_action = np.zeros((self.NUM_DRONES, 4))
         self.gui_input = np.zeros(4)
         #### Initialize the drones kinemaatic information ##########
-        self.pos = np.zeros((self.NUM_DRONES, 3))
+        self.pos = np.array([[0, 0, 1]], dtype=np.float32)
+        # self.pos = np.zeros((self.NUM_DRONES, 3))
         self.quat = np.zeros((self.NUM_DRONES, 4))
         self.rpy = np.zeros((self.NUM_DRONES, 3))
         self.vel = np.zeros((self.NUM_DRONES, 3))

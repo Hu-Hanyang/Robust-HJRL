@@ -12,8 +12,8 @@ class HoverDistbEnv(BaseDistbRLEnv):
                  drone_model: DroneModel=DroneModel.CF2X,
                  disturbance_type = 'fixed',
                  distb_level: float=0.0,
-                 initial_xyzs=np.array([0, 0, 1], dtype=np.float32),
-                 initial_rpys=np.zeros(3),
+                 initial_xyzs=np.array([[0, 0, 1]], dtype=np.float32),  # default 1 drone at [0, 0, 1]
+                 initial_rpys=np.zeros((1, 3)),
                  physics: Physics=Physics.PYB,
                  pyb_freq: int = 200,
                  ctrl_freq: int = 100,
@@ -77,7 +77,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
         # Set the penalties
         self.penalty_action =1e-4
         self.penalty_angle_rate = 1e-3
-        self.penalty_terminal = 1e2
+        self.penalty_terminal = 100
 
     ################################################################################
     
