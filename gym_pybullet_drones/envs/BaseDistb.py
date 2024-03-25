@@ -6,6 +6,7 @@ from datetime import datetime
 import xml.etree.ElementTree as etxml
 import pkg_resources
 from PIL import Image
+import cv2
 # import pkgutil
 # egl = pkgutil.get_loader('eglRenderer')
 import numpy as np
@@ -36,12 +37,12 @@ class BaseDistbEnv(gym.Env):
                  pyb_freq: int = 200,  # Need to guarantee pyb_freq % ctrl_freq == 0
                  ctrl_freq: int = 100,
                  gui=False,
-                 record=False,
+                 record=True,
                  obstacles=False,
                  user_debug_gui=True,
                  vision_attributes=False,
                  output_folder='results',
-                 randomization_reset=True
+                 randomization_reset=False
                  ):
         """Initialization of a generic aviary environment.
 
@@ -153,8 +154,8 @@ class BaseDistbEnv(gym.Env):
         self.GND_EFF_H_CLIP = 0.25 * self.PROP_RADIUS * np.sqrt((15 * self.MAX_RPM**2 * self.KF * self.GND_EFF_COEFF) / self.MAX_THRUST)
         #### Create attributes for vision tasks ####################
         if self.RECORD:
-            self.ONBOARD_IMG_PATH = os.path.join(self.OUTPUT_FOLDER, "recording_" + self.distb_type + "distb" + datetime.now().strftime("%m.%d.%Y_%H.%M"))
-            os.makedirs(os.path.dirname(self.ONBOARD_IMG_PATH), exist_ok=True)
+            self.ONBOARD_IMG_PATH = os.path.join(self.OUTPUT_FOLDER, "recording_" + self.distb_type, f"distb-{self.distb_level}" + datetime.now().strftime("%Y.%m.%d._%H:%M"))
+            # os.makedirs(os.path.dirname(self.ONBOARD_IMG_PATH), exist_ok=True)
         self.VISION_ATTR = vision_attributes
         if self.VISION_ATTR:
             self.IMG_RES = np.array([64, 48])
@@ -268,6 +269,10 @@ class BaseDistbEnv(gym.Env):
 
         # TODO: initialize random number generator with seed: does it be set while using SB3?
         # TODO: could add some randomization to initial conditions, done
+        
+        # Hanyang: generate the GIF or mp4 video use the frames
+        # if len(self.frames) > 0:
+            
 
         p.resetSimulation(physicsClientId=self.CLIENT)
         #### Housekeeping ##########################################
@@ -279,6 +284,20 @@ class BaseDistbEnv(gym.Env):
         #### Return the initial observation ########################
         initial_obs = self._computeObs()
         initial_info = self._computeInfo()
+        
+        # # Hanyang: save the initial image tensor
+        # if self.RECORD:
+        #     [w, h, rgb, dep, seg] = p.getCameraImage(width=self.VID_WIDTH,
+        #                                              height=self.VID_HEIGHT,
+        #                                              shadow=1,
+        #                                              viewMatrix=self.CAM_VIEW,
+        #                                              projectionMatrix=self.CAM_PRO,
+        #                                              renderer=p.ER_TINY_RENDERER,
+        #                                              flags=p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX,
+        #                                              physicsClientId=self.CLIENT
+        #                                              )
+        #     # (Image.fromarray(np.reshape(rgb, (h, w, 4)), 'RGBA')).save(os.path.join(self.IMG_PATH, "frame_"+str(self.FRAME_NUM)+".png"))
+        #     self.frames.append(np.reshape(rgb, (h, w, 4)))
         return initial_obs, initial_info
     
     ################################################################################
@@ -328,6 +347,7 @@ class BaseDistbEnv(gym.Env):
                                                      physicsClientId=self.CLIENT
                                                      )
             (Image.fromarray(np.reshape(rgb, (h, w, 4)), 'RGBA')).save(os.path.join(self.IMG_PATH, "frame_"+str(self.FRAME_NUM)+".png"))
+            # self.frames.append(np.reshape(rgb, (h, w, 4)))
             #### Save the depth or segmentation view instead #######
             # dep = ((dep-np.min(dep)) * 255 / (np.max(dep)-np.min(dep))).astype('uint8')
             # (Image.fromarray(np.reshape(dep, (h, w)))).save(self.IMG_PATH+"frame_"+str(self.FRAME_NUM)+".png")
@@ -602,7 +622,7 @@ class BaseDistbEnv(gym.Env):
 
         """
         if self.RECORD and self.GUI:
-            VIDEO_FOLDER = os.path.join(self.OUTPUT_FOLDER, "recording_" + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
+            VIDEO_FOLDER = os.path.join(self.OUTPUT_FOLDER, "recording_" + self.distb_type + f"distb_{self.distb_level}", datetime.now().strftime("%Y.%m.%d._%H:%M"))
             os.makedirs(os.path.dirname(VIDEO_FOLDER), exist_ok=True)
             self.VIDEO_ID = p.startStateLogging(loggingType=p.STATE_LOGGING_VIDEO_MP4,
                                                 fileName=os.path.join(VIDEO_FOLDER, "output.mp4"),
@@ -610,9 +630,10 @@ class BaseDistbEnv(gym.Env):
                                                 )
         if self.RECORD and not self.GUI:
             self.FRAME_NUM = 0
-            self.IMG_PATH = os.path.join(self.OUTPUT_FOLDER, "recording_" + datetime.now().strftime("%m.%d.%Y_%H.%M.%S"), '')
+            self.IMG_PATH = os.path.join(self.OUTPUT_FOLDER, "recording_" + self.distb_type + f"distb_{self.distb_level}", datetime.now().strftime("%Y.%m.%d._%H:%M"), '')
             os.makedirs(os.path.dirname(self.IMG_PATH), exist_ok=True)
-    
+            # Hanyang: initialize a list to store all tensors
+            # self.frames = []
     ################################################################################
 
     def _getDroneStateVector(self,
@@ -1263,3 +1284,21 @@ class BaseDistbEnv(gym.Env):
             current_position + normalized_direction * step_size
         )  # Calculate the next step
         return next_step
+    
+    # Hanyang: add a function to get the current image numpy array
+    def get_CurrentImage(self):
+        [w, h, rgb, dep, seg] = p.getCameraImage(width=self.VID_WIDTH,
+                                                     height=self.VID_HEIGHT,
+                                                     shadow=1,
+                                                     viewMatrix=self.CAM_VIEW,
+                                                     projectionMatrix=self.CAM_PRO,
+                                                     renderer=p.ER_TINY_RENDERER,
+                                                     flags=p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX,
+                                                     physicsClientId=self.CLIENT
+                                                     )
+        frame = np.reshape(rgb, (h, w, 4))
+        rgb_image = frame[:, :, :3]
+        return rgb_image
+        
+        
+        

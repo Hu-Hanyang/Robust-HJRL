@@ -1,0 +1,9 @@
+{   
+    "n_envs": 32,  
+    "train_seed": 0,
+    "batch_size": 64,
+    "n_steps": 2048,
+    "target_kl": 0.01,
+    "total_timesteps": 1e6
+    
+}

@@ -61,16 +61,49 @@ import torch.nn as nn
 # print(initial_rpys.shape)
 
 
-env = HoverDistbEnv(disturbance_type='fixed', distb_level=1.0)
+# env = HoverDistbEnv(disturbance_type='fixed', distb_level=0.0)
+# print(env.OUTPUT_FOLDER)
 
 # print(env.ACTION_BUFFER_SIZE)
 # print(env.distb_level)
-# print(env.observation_space)
-print(env.action_space)
+# # print(env.observation_space)
+# # print(env.action_space)
 # init_obs, init_info = env.reset()
-# print(env.pos)
+# print(init_obs)
+# # print(env.pos)
+
+# obs = env.reset()
+# env.render()
+# for i in range(100):
+#     # action, _ = model.predict(obs, deterministic=False)
+#     action = env.action_space.sample()
+#     obs, reward, terminated, truncated, info = env.step(action)
+#     # for index in range(len(info["render_image"])):
+#         # writer.append_data(cv2.rotate(info["render_image"][index], cv2.ROTATE_180))
+#     if terminated or truncated:
+#         obs = env.reset()
+# env.close()
 
 
-# env = HoverAviary()
-# check_env(env)
+import numpy as np
+import imageio
+import cv2
+
+# Assuming your list of numpy arrays is called image_list
+# image_list should contain RGBA images of shape (h, w, 4)
+# For the sake of this example, let's create a dummy image_list
+# Replace this with your actual list
+image_list = [np.random.rand(100, 100, 4) for _ in range(50)]
+
+# Initialize video writer
+out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 10, (image_list[0].shape[1], image_list[0].shape[0]))
+
+# Write each frame to the video
+for frame in image_list:
+    # Convert RGBA to BGR
+    bgr_frame = cv2.cvtColor((frame * 255).astype(np.uint8), cv2.COLOR_RGBA2BGR)
+    out.write(bgr_frame)
+
+# Release video writer
+out.release()
 

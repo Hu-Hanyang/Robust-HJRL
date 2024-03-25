@@ -20,7 +20,8 @@ class HoverDistbEnv(BaseDistbRLEnv):
                  gui=False,
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
-                 act: ActionType=ActionType.RPM
+                 act: ActionType=ActionType.RPM, 
+                 output_folder='results'
                  ):
         """Initialization of a single agent RL environment.
 
@@ -67,7 +68,8 @@ class HoverDistbEnv(BaseDistbRLEnv):
                          gui=gui,
                          record=record,
                          obs=obs,
-                         act=act
+                         act=act,
+                         output_folder=output_folder
                          )
         # Set the limits for states
         self.rp_limit = 60 * self.DEG2RAD  # rad
@@ -78,6 +80,11 @@ class HoverDistbEnv(BaseDistbRLEnv):
         self.penalty_action =1e-4
         self.penalty_angle_rate = 1e-3
         self.penalty_terminal = 100
+        
+        # Log the episode info
+        self.current_penalty = 0.0  # Hanyang: log the current penalty
+        self.current_dist = 0.0  # Hanyang: log the current distance to the target
+        self.current_reward = 0.0 # Hanyang: log the current reward
 
     ################################################################################
     
@@ -107,6 +114,10 @@ class HoverDistbEnv(BaseDistbRLEnv):
         penalties = np.sum([penalty_action, penalty_rpy_dot, penalty_terminal])
         dist = np.linalg.norm(state[0:3] - self.TARGET_POS)
         reward = -dist - penalties
+        
+        self.current_penalty = penalties  # Hanyang: log the current penalty
+        self.current_dist = dist
+        self.current_reward = reward
 
         return reward
 
@@ -124,7 +135,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
 
         """
         state = self._getDroneStateVector(0)  # state.shape = (20,) state = [pos, quat, rpy, vel, ang_vel, last_clipped_action]
-        position_limit = abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0
+        # position_limit = abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0
         rp = state[7:9]  # rad
         rp_limit = rp[np.abs(rp) > self.rp_limit].any()
         rpy_dot = state[13:16]  # rad/s
@@ -132,8 +143,9 @@ class HoverDistbEnv(BaseDistbRLEnv):
         z = state[2]  # m
         z_limit = z <= self.z_lim
 
-        done = True if position_limit or rp_limit or rpy_dot_limit or z_limit else False
-
+        # done = True if position_limit or rp_limit or rpy_dot_limit or z_limit else False
+        done = True if rp_limit or rpy_dot_limit or z_limit else False
+        
         return done
         
     ################################################################################
@@ -173,6 +185,11 @@ class HoverDistbEnv(BaseDistbRLEnv):
 
         """
         info = {}
-        # info['disturbance_level'] = self.distb_level
-        info["answer"] = 42
+        info['current_position'] = self._getDroneStateVector(0)[0:3]
+        info['current_rpy'] = self._getDroneStateVector(0)[7:10]
+        info['current_velocity'] = self._getDroneStateVector(0)[10:13]
+        info['current_penalty'] = self.current_penalty
+        info['current_dist'] = self.current_dist
+        info['current_reward'] = self.current_reward
+        
         return info #### Calculated by the Deep Thought supercomputer in 7.5M years
