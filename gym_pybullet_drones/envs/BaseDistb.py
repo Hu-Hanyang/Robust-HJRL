@@ -42,7 +42,7 @@ class BaseDistbEnv(gym.Env):
                  user_debug_gui=True,
                  vision_attributes=False,
                  output_folder='results',
-                 randomization_reset=False
+                 randomization_reset=True
                  ):
         """Initialization of a generic aviary environment.
 

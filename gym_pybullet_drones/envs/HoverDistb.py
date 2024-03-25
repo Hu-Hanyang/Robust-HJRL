@@ -21,7 +21,8 @@ class HoverDistbEnv(BaseDistbRLEnv):
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
                  act: ActionType=ActionType.RPM, 
-                 output_folder='results'
+                 output_folder='results',
+                 randomization_reset=True
                  ):
         """Initialization of a single agent RL environment.
 
@@ -69,7 +70,8 @@ class HoverDistbEnv(BaseDistbRLEnv):
                          record=record,
                          obs=obs,
                          act=act,
-                         output_folder=output_folder
+                         output_folder=output_folder,
+                         randomization_reset=randomization_reset
                          )
         # Set the limits for states
         self.rp_limit = 60 * self.DEG2RAD  # rad

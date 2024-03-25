@@ -93,17 +93,41 @@ import cv2
 # image_list should contain RGBA images of shape (h, w, 4)
 # For the sake of this example, let's create a dummy image_list
 # Replace this with your actual list
-image_list = [np.random.rand(100, 100, 4) for _ in range(50)]
+# image_list = [np.random.rand(100, 100, 4) for _ in range(50)]
 
-# Initialize video writer
-out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 10, (image_list[0].shape[1], image_list[0].shape[0]))
+# # Initialize video writer
+# out = cv2.VideoWriter('output.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 10, (image_list[0].shape[1], image_list[0].shape[0]))
 
-# Write each frame to the video
-for frame in image_list:
-    # Convert RGBA to BGR
-    bgr_frame = cv2.cvtColor((frame * 255).astype(np.uint8), cv2.COLOR_RGBA2BGR)
-    out.write(bgr_frame)
+# # Write each frame to the video
+# for frame in image_list:
+#     # Convert RGBA to BGR
+#     bgr_frame = cv2.cvtColor((frame * 255).astype(np.uint8), cv2.COLOR_RGBA2BGR)
+#     out.write(bgr_frame)
 
-# Release video writer
-out.release()
+# # Release video writer
+# out.release()
+
+
+
+# test gifs
+
+import numpy as np
+import imageio
+
+# Function to generate random RGB images
+def generate_random_image(height, width):
+    return np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
+
+# Create a list of 10 random RGB images
+image_list = [generate_random_image(100, 100) for _ in range(2)]
+
+# Function to create GIF
+def create_gif(image_list, filename, duration=0.1):
+    images = []
+    for img in image_list:
+        images.append(img.astype(np.uint8))  # Convert to uint8 for imageio
+    imageio.mimsave(f'{filename}', images, duration=duration)
+
+# Generate the GIF
+create_gif(image_list, "random_images.gif", duration=0.1)
 

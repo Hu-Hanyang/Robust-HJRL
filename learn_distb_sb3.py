@@ -59,7 +59,7 @@ DEFAULT_DISTURBANCE_LEVEL = 0.0
 class ValidateCheckpointCallback(BaseCallback):
     """
     Callback for saving a model every ``save_freq`` calls
-    to ``env.step()``.
+    to ``env.step()`` and validating the model immediately.
     By default, it only saves model checkpoints,
     you need to pass ``save_replay_buffer=True``,
     and ``save_vecnormalize=True`` to also save replay buffer checkpoints
@@ -77,6 +77,7 @@ class ValidateCheckpointCallback(BaseCallback):
     :param save_replay_buffer: Save the model replay buffer
     :param save_vecnormalize: Save the ``VecNormalize`` statistics
     :param verbose: Verbosity level: 0 for no output, 2 for indicating when saving model checkpoint
+    :param 
     """
 
     def __init__(
@@ -87,6 +88,8 @@ class ValidateCheckpointCallback(BaseCallback):
         save_replay_buffer: bool = False,
         save_vecnormalize: bool = False,
         verbose: int = 0,
+        distb_type: str = 'fixed',
+        distb_level: float = 0.0,
     ):
         super().__init__(verbose)
         self.save_freq = save_freq
@@ -94,6 +97,8 @@ class ValidateCheckpointCallback(BaseCallback):
         self.name_prefix = name_prefix
         self.save_replay_buffer = save_replay_buffer
         self.save_vecnormalize = save_vecnormalize
+        self.distb_type = distb_type
+        self.distb_level = distb_level
 
     def _init_callback(self) -> None:
         # Create folder if needed
@@ -115,6 +120,9 @@ class ValidateCheckpointCallback(BaseCallback):
         if self.n_calls % self.save_freq == 0:
             model_path = self._checkpoint_path(extension="zip")
             self.model.save(model_path)
+            # Hanyang: validate the model immediately
+            self._validate(model_path)
+
             if self.verbose >= 2:
                 print(f"Saving model checkpoint to {model_path}")
 
@@ -133,6 +141,49 @@ class ValidateCheckpointCallback(BaseCallback):
                     print(f"Saving model VecNormalize to {vec_normalize_path}")
 
         return True
+    
+    def _validate(self, model_path):
+        validate_model = PPO.load(model_path)
+
+        #### Make save path ###################################
+        validate_result = os.path.dirname(model_path) + f'/validate_{model_path}'
+        if not os.path.exists(validate_result):
+            os.makedirs(validate_result+'/')
+        
+        #### Create the environment ################################
+        validate_env = HoverDistbEnv(disturbance_type=self.distb_type, distb_level=self.distb_level, record=True)
+        num_gifs = 5
+        frames = [[] for _ in range(num_gifs)]
+        num = 0
+        
+        while num < num_gifs:
+            terminated, truncated = False, False
+            rewards = 0.0
+            steps = 0
+            obs, info = validate_env.reset()
+            frames[num].append(validate_env.get_CurrentImage())  # the return frame is np.reshape(rgb, (h, w, 4))
+            
+            for _ in range(500):
+                action, _ = validate_model.predict(obs, deterministic=False)
+                obs, reward, terminated, truncated, info = validate_env.step(action)
+                frames[num].append(validate_env.get_CurrentImage())
+                rewards += reward
+                steps += 1
+                
+                if terminated or truncated or steps>=500:
+                    print(f"[INFO] Test {num} is terminated or truncated with rewards = {rewards} and {steps} steps.")
+                    self._generate_gifs(frames[num], validate_result, num)
+                    num += 1
+                    break
+    
+    def _generate_gifs(self, frames, save_path, idx):
+        # Initialize video writer
+        images = []
+        for frame in frames:
+            images.append(frame.astype(np.uint8))
+
+        imageio.mimsave(f'{save_path}-gif{idx}.gif', images, duration=0.1)
+
 
 
 class TensorboardCallback(BaseCallback):
@@ -240,15 +291,26 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
     #                                                  verbose=1)
     #TODO: Custermized one that could save the video of each checkpoint model
-    #TODO: add the input of the env so that could generate the video
-    checkpoint_callback = CheckpointCallback(
+    #TODO: test the new 
+    # checkpoint_callback = CheckpointCallback(
+    #                         save_freq=100,
+    #                         save_path=f"{filename}/train_logs/",
+    #                         name_prefix="PPO",
+    #                         save_replay_buffer=True,
+    #                         save_vecnormalize=True,
+    #                         )
+    
+    checkpoint_callback = ValidateCheckpointCallback(
                             save_freq=100,
                             save_path=f"{filename}/train_logs/",
                             name_prefix="PPO",
                             save_replay_buffer=True,
                             save_vecnormalize=True,
+                            distb_type=distb_type,
+                            distb_level=distb_level,
                             )
 
+    
     tensorboard_callback = TensorboardCallback()
     train_callback = CallbackList([checkpoint_callback, tensorboard_callback])
     
