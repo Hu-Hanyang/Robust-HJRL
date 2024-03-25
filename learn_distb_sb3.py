@@ -55,6 +55,86 @@ assert DEFAULT_DISTURBANCE_TYPE in ['fixed', 'boltzmann', 'random', 'rarl', 'rar
 DEFAULT_DISTURBANCE_LEVEL = 0.0
 
 
+#TODO: Hanyang: customized callback function which could validate the saved model immediately
+class ValidateCheckpointCallback(BaseCallback):
+    """
+    Callback for saving a model every ``save_freq`` calls
+    to ``env.step()``.
+    By default, it only saves model checkpoints,
+    you need to pass ``save_replay_buffer=True``,
+    and ``save_vecnormalize=True`` to also save replay buffer checkpoints
+    and normalization statistics checkpoints.
+
+    .. warning::
+
+      When using multiple environments, each call to  ``env.step()``
+      will effectively correspond to ``n_envs`` steps.
+      To account for that, you can use ``save_freq = max(save_freq // n_envs, 1)``
+
+    :param save_freq: Save checkpoints every ``save_freq`` call of the callback.
+    :param save_path: Path to the folder where the model will be saved.
+    :param name_prefix: Common prefix to the saved models
+    :param save_replay_buffer: Save the model replay buffer
+    :param save_vecnormalize: Save the ``VecNormalize`` statistics
+    :param verbose: Verbosity level: 0 for no output, 2 for indicating when saving model checkpoint
+    """
+
+    def __init__(
+        self,
+        save_freq: int,
+        save_path: str,
+        name_prefix: str = "rl_model",
+        save_replay_buffer: bool = False,
+        save_vecnormalize: bool = False,
+        verbose: int = 0,
+    ):
+        super().__init__(verbose)
+        self.save_freq = save_freq
+        self.save_path = save_path
+        self.name_prefix = name_prefix
+        self.save_replay_buffer = save_replay_buffer
+        self.save_vecnormalize = save_vecnormalize
+
+    def _init_callback(self) -> None:
+        # Create folder if needed
+        if self.save_path is not None:
+            os.makedirs(self.save_path, exist_ok=True)
+
+    def _checkpoint_path(self, checkpoint_type: str = "", extension: str = "") -> str:
+        """
+        Helper to get checkpoint path for each type of checkpoint.
+
+        :param checkpoint_type: empty for the model, "replay_buffer_"
+            or "vecnormalize_" for the other checkpoints.
+        :param extension: Checkpoint file extension (zip for model, pkl for others)
+        :return: Path to the checkpoint
+        """
+        return os.path.join(self.save_path, f"{self.name_prefix}_{checkpoint_type}{self.num_timesteps}_steps.{extension}")
+
+    def _on_step(self) -> bool:
+        if self.n_calls % self.save_freq == 0:
+            model_path = self._checkpoint_path(extension="zip")
+            self.model.save(model_path)
+            if self.verbose >= 2:
+                print(f"Saving model checkpoint to {model_path}")
+
+            if self.save_replay_buffer and hasattr(self.model, "replay_buffer") and self.model.replay_buffer is not None:
+                # If model has a replay buffer, save it too
+                replay_buffer_path = self._checkpoint_path("replay_buffer_", extension="pkl")
+                self.model.save_replay_buffer(replay_buffer_path)
+                if self.verbose > 1:
+                    print(f"Saving model replay buffer checkpoint to {replay_buffer_path}")
+
+            if self.save_vecnormalize and self.model.get_vec_normalize_env() is not None:
+                # Save the VecNormalize statistics
+                vec_normalize_path = self._checkpoint_path("vecnormalize_", extension="pkl")
+                self.model.get_vec_normalize_env().save(vec_normalize_path)
+                if self.verbose >= 2:
+                    print(f"Saving model VecNormalize to {vec_normalize_path}")
+
+        return True
+
+
 class TensorboardCallback(BaseCallback):
     """
     Custom callback for plotting additional values in tensorboard.
@@ -216,7 +296,7 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     # model = PPO.load(path)
 
 
-def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_test_steps=500,  num_videos=1, fps=20):
+def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_test_steps=500,  num_videos=2, fps=20):
     #### Load the trained model ###################################
     assert model_path is not None, f"[ERROR] The model {model} does not exist, please check the loading path."
     model = PPO.load(model_path)
@@ -294,7 +374,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_distb_type',    default="fixed",      type=str,           help='Type of disturbance in the test environment', metavar='')
     parser.add_argument('--test_distb_level',   default=0.0,          type=float,         help='Level of disturbance in the test environment', metavar='')
     parser.add_argument('--max_test_steps',     default=500,          type=int,           help='Maximum number of steps in the test environment', metavar='')
-    parser.add_argument('--num_videos',         default=1,            type=int,           help='Number of videos to generate in the test environment', metavar='')
+    parser.add_argument('--num_videos',         default=2,            type=int,           help='Number of videos to generate in the test environment', metavar='')
     parser.add_argument('--fps',                default=50,           type=int,           help='Frames per second in the generated videos', metavar='')
     
     args = parser.parse_args()
@@ -302,7 +382,7 @@ if __name__ == '__main__':
     if args.task == "train":
         train(distb_type=args.distb_type, distb_level=args.distb_level, seed=args.seed, multiagent=args.multiagent, settings=args.settings)
     elif args.task == "test":
-        model_path = "traning_results_sb3/fixed-distb_level_0.0/save-2024.03.14_15:15/final_model.zip"
+        model_path = "traning_results_sb3/fixed-distb_level_0.0/seed_40226/save-2024.03.24_23:42/final_model.zip"
         test(test_distb_type=args.test_distb_type, test_distb_level=args.test_distb_level, 
              model_path=model_path, max_test_steps=args.max_test_steps, 
              num_videos=args.num_videos, fps=args.fps)

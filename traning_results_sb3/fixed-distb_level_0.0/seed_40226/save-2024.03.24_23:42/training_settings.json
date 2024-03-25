@@ -4,6 +4,6 @@
     "batch_size": 64,
     "n_steps": 2048,
     "target_kl": 0.01,
-    "total_timesteps": 1e7
+    "total_timesteps": 1e6
     
 }
