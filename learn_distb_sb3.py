@@ -231,9 +231,9 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     
     #### Make save path ###################################
     if distb_type == 'fixed' or None:
-        filename = os.path.join('traning_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'seed_'+f"{seed}", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+        filename = os.path.join('training_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'seed_'+f"{seed}", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('traning_results_sb3/' + distb_type, 'seed_'+f"{seed}", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        filename = os.path.join('training_results_sb3/' + distb_type, 'seed_'+f"{seed}", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
 
@@ -367,7 +367,7 @@ def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_tes
     if test_distb_type == 'fixed' or None:
         filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('traning_results_sb3/' + test_distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        filename = os.path.join('test_results_sb3/' + test_distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
     print(f"[INFO] Save the test videos at: {filename}")

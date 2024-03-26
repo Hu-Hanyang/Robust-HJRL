@@ -164,9 +164,9 @@ if __name__ == "__main__":
     args.num_iterations = int(args.total_timesteps // args.batch_size)
     
     if args.disturbance_type == 'fixed' or None:
-        run_name = os.path.join('traning_results_cleanrl/' + 'fixed'+'-'+f'distb_level_{args.disturbance_level}_{args.seed}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+        run_name = os.path.join('training_results_cleanrl/' + 'fixed'+'-'+f'distb_level_{args.disturbance_level}_{args.seed}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        run_name = os.path.join('traning_results_cleanrl/' +f'{args.disturbance_type}_{args.seed}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        run_name = os.path.join('training_results_cleanrl/' +f'{args.disturbance_type}_{args.seed}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
     if not os.path.exists(run_name):
         os.makedirs(run_name+'/')
     # run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
