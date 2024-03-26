@@ -290,25 +290,25 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     #     target_reward = 467. if not multiagent else 920.
     # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
     #                                                  verbose=1)
-    #TODO: Custermized one that could save the video of each checkpoint model
-    #TODO: test the new 
-    # checkpoint_callback = CheckpointCallback(
-    #                         save_freq=100,
-    #                         save_path=f"{filename}/train_logs/",
-    #                         name_prefix="PPO",
-    #                         save_replay_buffer=True,
-    #                         save_vecnormalize=True,
-    #                         )
-    
-    checkpoint_callback = ValidateCheckpointCallback(
-                            save_freq=100,
+
+    #TODO: test the customized wrapper
+    checkpoint_callback = CheckpointCallback(
+                            save_freq=1e4,
                             save_path=f"{filename}/train_logs/",
                             name_prefix="PPO",
                             save_replay_buffer=True,
                             save_vecnormalize=True,
-                            distb_type=distb_type,
-                            distb_level=distb_level,
                             )
+    
+    # checkpoint_callback = ValidateCheckpointCallback(
+    #                         save_freq=5000,
+    #                         save_path=f"{filename}/train_logs/",
+    #                         name_prefix="PPO",
+    #                         save_replay_buffer=True,
+    #                         save_vecnormalize=True,
+    #                         distb_type=distb_type,
+    #                         distb_level=distb_level,
+    #                         )
 
     
     tensorboard_callback = TensorboardCallback()
@@ -418,7 +418,6 @@ def generate_videos(frames, save_path, idx, fps):
     # Release video writer
     out.release()
     print(f"[INFO] The video {idx} is saved as: {video_path}.")
-
 
 
 
