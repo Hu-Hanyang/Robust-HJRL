@@ -175,6 +175,8 @@ class ValidateCheckpointCallback(BaseCallback):
                     self._generate_gifs(frames[num], validate_result, num)
                     num += 1
                     break
+                
+        validate_env.close()
     
     def _generate_gifs(self, frames, save_path, idx):
         # Initialize video writer
@@ -183,7 +185,6 @@ class ValidateCheckpointCallback(BaseCallback):
             images.append(frame.astype(np.uint8))
 
         imageio.mimsave(f'{save_path}-gif{idx}.gif', images, duration=0.1)
-
 
 
 class TensorboardCallback(BaseCallback):
@@ -243,6 +244,7 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
         n_env = data['n_envs']
         train_seed = data['train_seed']
         batch_size = data['batch_size']
+        n_epochs = data['n_epochs']
         n_steps = data['n_steps']
         target_kl = data['target_kl']
         total_timesteps = data['total_timesteps']
@@ -276,6 +278,7 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     model = PPO('MlpPolicy',
                 train_env,
                 batch_size=batch_size,
+                n_epochs=n_epochs,
                 n_steps=n_steps,
                 seed=seed,
                 target_kl=target_kl,
@@ -443,7 +446,7 @@ if __name__ == '__main__':
     if args.task == "train":
         train(distb_type=args.distb_type, distb_level=args.distb_level, seed=args.seed, multiagent=args.multiagent, settings=args.settings)
     elif args.task == "test":
-        model_path = "traning_results_sb3/fixed-distb_level_0.0/seed_40226/save-2024.03.24_23:42/final_model.zip"
+        model_path = "traning_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.25_10:24/final_model.zip"
         test(test_distb_type=args.test_distb_type, test_distb_level=args.test_distb_level, 
              model_path=model_path, max_test_steps=args.max_test_steps, 
              num_videos=args.num_videos, fps=args.fps)

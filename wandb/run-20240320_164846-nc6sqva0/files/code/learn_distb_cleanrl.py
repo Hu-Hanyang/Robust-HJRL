@@ -59,7 +59,7 @@ class Args:
     """the id of the environment"""
     total_timesteps: int = 1e7
     """total timesteps of the experiments"""
-    disturbance_type: str = "fixed"
+    disturbance_type: str = "boltzmann"
     """the type of disturbance to be applied to the drones [None, 'fixed', 'boltzmann', 'random', 'rarl', 'rarl-population']"""
     disturbance_level: float = 0.0
     """the level of disturbance to be applied to the drones"""
@@ -159,9 +159,9 @@ class Agent(nn.Module):
 
 if __name__ == "__main__":
     args = tyro.cli(Args)
-    args.batch_size = int(args.num_envs * args.num_steps)
-    args.minibatch_size = int(args.batch_size // args.num_minibatches)
-    args.num_iterations = int(args.total_timesteps // args.batch_size)
+    args.batch_size = int(args.num_envs * args.num_steps)  # batch_size = num_envs * num_steps = 32 * 1000
+    args.minibatch_size = int(args.batch_size // args.num_minibatches)  # minibatch_size = batch_size // num_minibatches = 32000 // 32 = 1000
+    args.num_iterations = int(args.total_timesteps // args.batch_size)  # num_iterations = total_timesteps // batch_size = 1e7 // 32000 = 312
     
     if args.disturbance_type == 'fixed' or None:
         run_name = os.path.join('training_results_cleanrl/' + 'fixed'+'-'+f'distb_level_{args.disturbance_level}_{args.seed}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
@@ -222,14 +222,14 @@ if __name__ == "__main__":
     next_obs = torch.Tensor(next_obs).to(device)
     next_done = torch.zeros(args.num_envs).to(device)
 
-    for iteration in range(1, args.num_iterations + 1):
+    for iteration in range(1, args.num_iterations + 1):  # args.num_iterations  = int(args.total_timesteps // args.batch_size) = 312
         # Annealing the rate if instructed to do so.
         if args.anneal_lr:
             frac = 1.0 - (iteration - 1.0) / args.num_iterations
             lrnow = frac * args.learning_rate
             optimizer.param_groups[0]["lr"] = lrnow
 
-        for step in range(0, args.num_steps):
+        for step in range(0, args.num_steps):  # args.num_steps = 1000
             global_step += args.num_envs
             obs[step] = next_obs
             dones[step] = next_done
@@ -281,9 +281,9 @@ if __name__ == "__main__":
         # Optimizing the policy and value network
         b_inds = np.arange(args.batch_size)
         clipfracs = []
-        for epoch in range(args.update_epochs):
+        for epoch in range(args.update_epochs):  # args.update_epochs = 80
             np.random.shuffle(b_inds)
-            for start in range(0, args.batch_size, args.minibatch_size):
+            for start in range(0, args.batch_size, args.minibatch_size):  # args.batch_size = 32000, args.minibatch_size = 1000
                 end = start + args.minibatch_size
                 mb_inds = b_inds[start:end]
 
