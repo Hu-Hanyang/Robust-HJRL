@@ -141,7 +141,7 @@ class BaseDistbEnv(gym.Env):
             self.M, self.L, self.J[0,0], self.J[1,1], self.J[2,2], self.KF, self.KM, self.THRUST2WEIGHT_RATIO, self.MAX_SPEED_KMH, self.GND_EFF_COEFF, self.PROP_RADIUS, self.DRAG_COEFF[0], self.DRAG_COEFF[2], self.DW_COEFF_1, self.DW_COEFF_2, self.DW_COEFF_3))
         #### Compute constants #####################################
         self.GRAVITY = self.G*self.M
-        self.HOVER_RPM = np.sqrt(self.GRAVITY / (4*self.KF))
+        self.HOVER_RPM = np.sqrt(self.GRAVITY / (4*self.KF))  # np.sqrt(9.8/(4*3.16e-10)) = 88052
         self.MAX_RPM = np.sqrt((self.THRUST2WEIGHT_RATIO*self.GRAVITY) / (4*self.KF))
         self.MAX_THRUST = (4*self.KF*self.MAX_RPM**2)
         if self.DRONE_MODEL == DroneModel.CF2X:
@@ -441,6 +441,7 @@ class BaseDistbEnv(gym.Env):
                 p.stepSimulation(physicsClientId=self.CLIENT)
             #### Save the last applied action (e.g. to compute drag) ###
             self.last_clipped_action = clipped_action
+            self.last_original_action = action
         #### Update and store the drones kinematic information #####
         self._updateAndStoreKinematicInformation()
         #### Prepare the return values #############################
@@ -538,6 +539,8 @@ class BaseDistbEnv(gym.Env):
         self.USE_GUI_RPM=False
         self.last_input_switch = 0
         self.last_clipped_action = np.zeros((self.NUM_DRONES, 4))
+        # Hanyang: add self.last_original_action
+        self.last_original_action = np.zeros((self.NUM_DRONES, 4))
         self.gui_input = np.zeros(4)
         #### Initialize the drones kinemaatic information ##########
         self.pos = np.array([[0, 0, 1]], dtype=np.float32)
@@ -654,19 +657,23 @@ class BaseDistbEnv(gym.Env):
             to understand its format.
 
         """
-        if self.last_clipped_action[nth_drone, :].all() != 0:
-            action = ((self.last_clipped_action[nth_drone, :] / self.HOVER_RPM) - 1) / 0.05
-        else:
-            action = np.zeros(4)
+        # print(f"The self.last_clipped_action is {self.last_clipped_action[nth_drone, :]}")
+        # if self.last_clipped_action[nth_drone, :].all() != 0:
+        #     action = ((self.last_clipped_action[nth_drone, :] / self.HOVER_RPM) - 1) / 0.05
+        # else:
+        #     # action = np.zeros(4)
+        #     action = ((self.last_clipped_action[nth_drone, :] / self.HOVER_RPM) - 1) / 0.05
+            
         # self.last_clipped_action = clipped_action = p.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))
         # rpm = np.zeros((self.NUM_DRONES,4))
         # for k in range(action.shape[0]):
         #     target = action[k, :]
         #     if self.ACT_TYPE == ActionType.RPM:
         #         rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))
-
+        # print(f"The self.last_clipped_action is {self.last_clipped_action.shape}")
         state = np.hstack([self.pos[nth_drone, :], self.quat[nth_drone, :], self.rpy[nth_drone, :],
-                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], action])
+                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], self.last_original_action[nth_drone, :]])
+        # print(f"The shape of state is {state.shape}")
         return state.reshape(20,)
 
     ################################################################################

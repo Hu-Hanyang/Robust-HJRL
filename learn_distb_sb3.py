@@ -295,23 +295,23 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     #                                                  verbose=1)
 
     #TODO: test the customized wrapper
-    checkpoint_callback = CheckpointCallback(
+    # checkpoint_callback = CheckpointCallback(
+    #                         save_freq=1e4,
+    #                         save_path=f"{filename}/train_logs/",
+    #                         name_prefix="PPO",
+    #                         save_replay_buffer=True,
+    #                         save_vecnormalize=True,
+    #                         )
+    
+    checkpoint_callback = ValidateCheckpointCallback(
                             save_freq=1e4,
                             save_path=f"{filename}/train_logs/",
                             name_prefix="PPO",
                             save_replay_buffer=True,
                             save_vecnormalize=True,
+                            distb_type=distb_type,
+                            distb_level=distb_level,
                             )
-    
-    # checkpoint_callback = ValidateCheckpointCallback(
-    #                         save_freq=5000,
-    #                         save_path=f"{filename}/train_logs/",
-    #                         name_prefix="PPO",
-    #                         save_replay_buffer=True,
-    #                         save_vecnormalize=True,
-    #                         distb_type=distb_type,
-    #                         distb_level=distb_level,
-    #                         )
 
     
     tensorboard_callback = TensorboardCallback()
@@ -376,7 +376,7 @@ def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_tes
     print(f"[INFO] Save the test videos at: {filename}")
 
     #### Create the environment ################################
-    env = HoverDistbEnv(disturbance_type=test_distb_type, distb_level=test_distb_level, record=True)
+    env = HoverDistbEnv(disturbance_type=test_distb_type, distb_level=test_distb_level, record=True, randomization_reset=False)
     # print(env.OUTPUT_FOLDER)
     frames = [[] for _ in range(num_videos)]
     num = 0
@@ -388,8 +388,9 @@ def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_tes
         obs, info = env.reset()
         frames[num].append(env.get_CurrentImage())  # the return frame is np.reshape(rgb, (h, w, 4))
         
-        for _ in range(max_test_steps):
+        for step in range(max_test_steps):
             action, _ = model.predict(obs, deterministic=False)
+            print(f"The current action {step} is {action}")
             obs, reward, terminated, truncated, info = env.step(action)
             frames[num].append(env.get_CurrentImage())
             rewards += reward
@@ -397,7 +398,8 @@ def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_tes
             
             if terminated or truncated or steps>=max_test_steps:
                 print(f"[INFO] Test {num} is terminated or truncated with rewards = {rewards} and {steps} steps.")
-                generate_videos(frames[num], filename, num, fps)
+                # generate_videos(frames[num], filename, num, fps)
+                generate_gifs(frames[num], filename, num)
                 num += 1
                 break
 
@@ -422,6 +424,12 @@ def generate_videos(frames, save_path, idx, fps):
     out.release()
     print(f"[INFO] The video {idx} is saved as: {video_path}.")
 
+# Function to create GIF
+def generate_gifs(frames, save_path, idx, duration=0.1):
+    images = []
+    for frame in frames:
+        images.append(frame.astype(np.uint8))  # Convert to uint8 for imageio
+    imageio.mimsave(f'{save_path}/gif{idx}.gif', images, duration=duration)
 
 
 
@@ -446,7 +454,8 @@ if __name__ == '__main__':
     if args.task == "train":
         train(distb_type=args.distb_type, distb_level=args.distb_level, seed=args.seed, multiagent=args.multiagent, settings=args.settings)
     elif args.task == "test":
-        model_path = "traning_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.25_10:24/final_model.zip"
+        # model_path = "traning_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.25_10:24/final_model.zip"
+        model_path = "traning_results_sb3/fixed-distb_level_0.0/seed_40226/save-2024.03.24_23:42/final_model.zip"
         test(test_distb_type=args.test_distb_type, test_distb_level=args.test_distb_level, 
              model_path=model_path, max_test_steps=args.max_test_steps, 
              num_videos=args.num_videos, fps=args.fps)

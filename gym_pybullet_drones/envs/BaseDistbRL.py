@@ -207,7 +207,8 @@ class BaseDistbRLEnv(BaseDistbEnv):
         for k in range(action.shape[0]):
             target = action[k, :]
             if self.ACT_TYPE == ActionType.RPM:
-                rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))
+                rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))  # 88052 * (1+0.05* [-1 ,+1]) [83649.4, 92454.6]
+                # print(f"The RPM is {rpm[k,:]}")
             elif self.ACT_TYPE == ActionType.PID:
                 state = self._getDroneStateVector(k)
                 next_pos = self._calculateNextStep(
