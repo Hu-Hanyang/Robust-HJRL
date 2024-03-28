@@ -61,4 +61,4 @@ while num < num_gifs:
             create_gif(frames[num], f'check_env_gif{num}.gif', duration=0.1)
             num += 1
             break
-# env.close()
+env.close()

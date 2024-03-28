@@ -823,7 +823,7 @@ class BaseDistbEnv(gym.Env):
                               flags=p.LINK_FRAME,
                               physicsClientId=self.CLIENT
                               )
-        # Apply disturbances (torques) 
+        # Hanyang: Apply disturbances (torques) 
         p.applyExternalTorque(self.DRONE_IDS[nth_drone],
                               4,
                               torqueObj=[disturbances[0], 0, 0],
