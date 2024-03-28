@@ -175,7 +175,10 @@ class ValidateCheckpointCallback(BaseCallback):
                     self._generate_gifs(frames[num], validate_result, num)
                     num += 1
                     break
+<<<<<<< HEAD
+=======
                 
+>>>>>>> 3fda285df9a60d5ac2966e1578b6fc5654227656
         validate_env.close()
     
     def _generate_gifs(self, frames, save_path, idx):
@@ -296,6 +299,7 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
 
     #TODO: test the customized wrapper
     # checkpoint_callback = CheckpointCallback(
+<<<<<<< HEAD
     #                         save_freq=1e4,
     #                         save_path=f"{filename}/train_logs/",
     #                         name_prefix="PPO",
@@ -312,6 +316,24 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
                             distb_type=distb_type,
                             distb_level=distb_level,
                             )
+=======
+    #                        save_freq=1e4,
+    #                        save_path=f"{filename}/train_logs/",
+    #                        name_prefix="PPO",
+    #                        save_replay_buffer=True,
+    #                        save_vecnormalize=True,
+    #                        )
+    
+    checkpoint_callback = ValidateCheckpointCallback(
+                             save_freq=1e4,
+                             save_path=f"{filename}/train_logs/",
+                             name_prefix="PPO",
+                             save_replay_buffer=True,
+                             save_vecnormalize=True,
+                             distb_type=distb_type,
+                             distb_level=distb_level,
+                             )
+>>>>>>> c3cecea58d4d2bfc8587e04557af256431882efd
 
     
     tensorboard_callback = TensorboardCallback()
