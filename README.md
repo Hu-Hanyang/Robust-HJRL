@@ -32,3 +32,7 @@ python learn_distb.py
 
 The default one is 0-disturbance.
 
+
+### Working Logs
+#### 3.27 
+I suspect there is something wrong with the env because training still has no effect.
