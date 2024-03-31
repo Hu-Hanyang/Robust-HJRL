@@ -816,6 +816,9 @@ class BaseDistbEnv(gym.Env):
         if self.DRONE_MODEL == DroneModel.RACE:
             torques = -torques
         z_torque = (-torques[0] + torques[1] - torques[2] + torques[3])
+        # Hanyang: debug
+        print(f"The forces are {forces}")
+        print(f"The z_torques are {z_torque}")
         for i in range(4):
             p.applyExternalForce(self.DRONE_IDS[nth_drone],
                                  i,

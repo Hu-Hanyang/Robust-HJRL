@@ -6,6 +6,7 @@ This repository is deeply-based on the [`gym-pygbullet-drones`](https://github.c
 Tested on Intel x64/Ubuntu 18.04.
 
 
+
 ```sh
 git clone git@github.com:Hu-Hanyang/gym-pybullet-drones.git
 cd gym-pybullet-drones/
@@ -36,3 +37,11 @@ The default one is 0-disturbance.
 ### Working Logs
 #### 3.27 
 I suspect there is something wrong with the env because training still has no effect.
+
+#### 3.28
+Somethings to do:
+1. Check the thrust and torque calculation in the current env compared with the original one: check the magnitude;
+2. Transfer the PWMs to the current env to replace the rmps;
+3. As for the original env, remove all the noisy things and train the policy again;
+4. Implement different method: use Boltzmann distribution with one fixed disturbance level;
+5. Revise the draft: point out the former drawbacks and corresponding our method to fix those problems.

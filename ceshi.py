@@ -25,7 +25,7 @@ env = HoverDistbEnv(disturbance_type='fixed', distb_level=0.0, record=True, rand
 # init_obs, init_info = env.reset()
 # print(f"The init_obs shape is {init_obs.shape}")
 # print(f"The initial position is {init_obs[0][0:3]}")
-# model = PPO.load("model300.pt")
+model = PPO.load("training_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.26_12:13/train_logs/PPO_6720000_steps.zip")
 
 # check performances
 print(f"The disturbance level is {env.distb_level}")
@@ -45,10 +45,17 @@ while num < num_gifs:
     frames[num].append(env.get_CurrentImage())  # the return frame is np.reshape(rgb, (h, w, 4))
     
     for _ in range(max_steps):
-        # action, _ = validate_model.predict(obs, deterministic=False)
-        motor = 0.0
-        action = np.array([[motor, motor, motor, motor]])
+        if _ == 0:
+            obs = init_obs
+            
+        # manual control
+        motor = -1.0
+        # action = np.array([[motor, motor, motor, motor]])
+        # random control
         # action = env.action_space.sample()
+        # load the model to control
+        action, _ = model.predict(obs, deterministic=False)
+
         obs, reward, terminated, truncated, info = env.step(action)
         # print(f"The current reward of the step{_} is {reward} and this leads to {terminated} and {truncated}")
         # print(f"The current penalty of the step{_} is {info['current_penalty']} and the current distance is {info['current_dist']}")
