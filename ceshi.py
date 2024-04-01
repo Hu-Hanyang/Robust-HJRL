@@ -20,7 +20,7 @@ def create_gif(image_list, filename, duration=0.1):
 
 
 # Check the env
-env = HoverDistbEnv(disturbance_type='fixed', distb_level=0.0, record=True, randomization_reset=True)
+env = HoverDistbEnv(disturbance_type='fixed', distb_level=0.0, record=True, randomization_reset=False)
 # check_env(env)
 # init_obs, init_info = env.reset()
 # print(f"The init_obs shape is {init_obs.shape}")
@@ -49,12 +49,12 @@ while num < num_gifs:
             obs = init_obs
             
         # manual control
-        motor = -1.0
-        # action = np.array([[motor, motor, motor, motor]])
+        motor = 0.0
+        action = np.array([[motor, motor, motor, motor]])
         # random control
         # action = env.action_space.sample()
         # load the model to control
-        action, _ = model.predict(obs, deterministic=False)
+        # action, _ = model.predict(obs, deterministic=False)
 
         obs, reward, terminated, truncated, info = env.step(action)
         # print(f"The current reward of the step{_} is {reward} and this leads to {terminated} and {truncated}")
@@ -70,3 +70,15 @@ while num < num_gifs:
             num += 1
             break
 env.close()
+    
+
+# # Test the shape of the action
+# action = np.array([[0.0, 0.0, 0.0, 0.0]])
+# print(f"The shape of action is {action.shape}.")
+
+# pwms = np.zeros((2, 4))
+# for n in range(2):
+#     pwms[0, :] = 30000 + np.clip(action, -1, +1) * 30000  # PWM in [0, 60000]
+#     print(f"The shape of pwms[{n}] is {pwms[n].shape}.")
+
+# print(f"The shape of pwms is {pwms.shape}.")

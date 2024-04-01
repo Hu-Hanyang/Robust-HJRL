@@ -35,6 +35,11 @@ The default one is 0-disturbance.
 
 
 ### Working Logs
+#### Older changes
+MICHAEL MODIFICATION for using the CleanRL library
+`action = np.atleast_2d(action)`
+in the file `BaseDistbRL.py`.
+
 #### 3.27 
 I suspect there is something wrong with the env because training still has no effect.
 

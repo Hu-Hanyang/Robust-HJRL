@@ -20,7 +20,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
                  gui=False,
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
-                 act: ActionType=ActionType.RPM, 
+                 act: ActionType=ActionType.PWM, 
                  output_folder='results',
                  randomization_reset=True
                  ):

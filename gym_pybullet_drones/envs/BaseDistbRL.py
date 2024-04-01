@@ -27,7 +27,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
                  gui=False,
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
-                 act: ActionType=ActionType.RPM,
+                 act: ActionType=ActionType.PWM,
                  output_folder='results',
                  randomization_reset=True
                  ):
@@ -151,7 +151,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
             A Box of size NUM_DRONES x 4, 3, or 1, depending on the action type.
 
         """
-        if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL]:
+        if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL, ActionType.PWM]:
             size = 4
         elif self.ACT_TYPE==ActionType.PID:
             size = 3
@@ -198,17 +198,24 @@ class BaseDistbRLEnv(BaseDistbEnv):
             commanded to the 4 motors of each drone.
 
         """
-        #TODO: MICHAEL MODIFICATION for using the CleanRL library
-        action = np.atleast_2d(action)
+        # #TODO: MICHAEL MODIFICATION for using the CleanRL library
+        # action = np.atleast_2d(action)
         # MICHAEL MODIFICATION
 
         self.action_buffer.append(action)
         rpm = np.zeros((self.NUM_DRONES,4))
         for k in range(action.shape[0]):
             target = action[k, :]
+
             if self.ACT_TYPE == ActionType.RPM:
                 rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))  # 88052 * (1+0.05* [-1 ,+1]) [83649.4, 92454.6]
                 # print(f"The RPM is {rpm[k,:]}")
+            # Hanyang: add PWM action typea
+            # Just for usage, use varbiables rpm to store the PWM values
+            elif self.ACT_TYPE == ActionType.PWM:
+                for n in range(self.NUM_DRONES):
+                    rpm[n, :] =  30000 + np.clip(action, -1, +1) * 30000  # PWM in [0, 60000]
+
             elif self.ACT_TYPE == ActionType.PID:
                 state = self._getDroneStateVector(k)
                 next_pos = self._calculateNextStep(
@@ -306,7 +313,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
             act_lo = -1
             act_hi = +1
             for i in range(self.ACTION_BUFFER_SIZE):
-                if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL]:
+                if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL, ActionType.PWM]:
                     obs_lower_bound = np.hstack([obs_lower_bound, np.array([[act_lo,act_lo,act_lo,act_lo] for i in range(self.NUM_DRONES)])])
                     obs_upper_bound = np.hstack([obs_upper_bound, np.array([[act_hi,act_hi,act_hi,act_hi] for i in range(self.NUM_DRONES)])])
                 elif self.ACT_TYPE==ActionType.PID:

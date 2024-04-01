@@ -143,7 +143,9 @@ class BaseDistbEnv(gym.Env):
         self.GRAVITY = self.G*self.M
         self.HOVER_RPM = np.sqrt(self.GRAVITY / (4*self.KF))  # np.sqrt(9.8/(4*3.16e-10)) = 88052
         self.MAX_RPM = np.sqrt((self.THRUST2WEIGHT_RATIO*self.GRAVITY) / (4*self.KF))
-        self.MAX_THRUST = (4*self.KF*self.MAX_RPM**2)
+        # self.MAX_THRUST = (4*self.KF*self.MAX_RPM**2)
+        # Hanyang: use the calculation of the max_thrust from disturbance-CrazyFlie-simulation
+        self.MAX_THRUST = self.GRAVITY * self.THRUST2WEIGHT_RATIO / 4
         if self.DRONE_MODEL == DroneModel.CF2X:
             self.MAX_XY_TORQUE = (2*self.L*self.KF*self.MAX_RPM**2)/np.sqrt(2)
         elif self.DRONE_MODEL == DroneModel.CF2P:
@@ -217,7 +219,6 @@ class BaseDistbEnv(gym.Env):
                                                             farVal=1000.0
                                                             )
         #### Set initial poses #####################################
-        #TODO: Check the initilaiztions here!!!!!! could we initialize the (0,0,1) here directlt?
         if initial_xyzs is None:
             self.INIT_XYZS = np.vstack([np.array([x*4*self.L for x in range(self.NUM_DRONES)]), \
                                         np.array([y*4*self.L for y in range(self.NUM_DRONES)]), \
@@ -265,11 +266,7 @@ class BaseDistbEnv(gym.Env):
             Additional information as a dictionary, check the specific implementation of `_computeInfo()`
             in each subclass for its format.
 
-        """
-
-        # TODO: initialize random number generator with seed: does it be set while using SB3?
-        # TODO: could add some randomization to initial conditions, done
-        
+        """        
         # Hanyang: generate the GIF or mp4 video use the frames
         # if len(self.frames) > 0:
             
@@ -305,7 +302,6 @@ class BaseDistbEnv(gym.Env):
     def step(self,
              action
              ):
-        # TODO: implement heterogeneous disturbances generators, done
         """Advances the environment by one simulation step.
 
         Parameters
@@ -386,7 +382,7 @@ class BaseDistbEnv(gym.Env):
                                                           ) for i in range(self.NUM_DRONES)]
         #### Save, preprocess, and clip the action to the max. RPM #
         else:  # TODO: check the function of _preprocessAction() with our former one, done
-            clipped_action = np.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))  # clipped_action is the clipped RPMs
+            clipped_action = np.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))  # the shape of the clipped_action is (NUM_DRONES, 4)
 
         #### Repeat for as many as the aggregate physics steps #####
         if self.distb_type == None:
@@ -420,6 +416,7 @@ class BaseDistbEnv(gym.Env):
 
                 if self.PHYSICS == Physics.PYB:
                     self._physics(clipped_action[i, :], disturbances, i)
+                    self._physics_pwm(clipped_action[i, :], disturbances, i)
                 elif self.PHYSICS == Physics.DYN:
                     self._dynamics(clipped_action[i, :], i)
                 elif self.PHYSICS == Physics.PYB_GND:
@@ -521,7 +518,6 @@ class BaseDistbEnv(gym.Env):
     ################################################################################
 
     def _housekeeping(self):
-        # TODO: add randomization of initial conditions when reset, done
         """Housekeeping function.
 
         Allocation and zero-ing of the variables and PyBullet's parameters/objects
@@ -672,7 +668,7 @@ class BaseDistbEnv(gym.Env):
         #         rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))
         # print(f"The self.last_clipped_action is {self.last_clipped_action.shape}")
         state = np.hstack([self.pos[nth_drone, :], self.quat[nth_drone, :], self.rpy[nth_drone, :],
-                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], self.last_original_action[nth_drone, :]])
+                           self.vel[nth_drone, :], self.ang_v[nth_drone, :], self.last_clipped_action[nth_drone, :]])
         # print(f"The shape of state is {state.shape}")
         return state.reshape(20,)
 
@@ -817,8 +813,70 @@ class BaseDistbEnv(gym.Env):
             torques = -torques
         z_torque = (-torques[0] + torques[1] - torques[2] + torques[3])
         # Hanyang: debug
-        print(f"The forces are {forces}")
-        print(f"The z_torques are {z_torque}")
+        # print(f"The forces are {forces}")
+        # print(f"The z_torques are {z_torque}")
+        for i in range(4):
+            p.applyExternalForce(self.DRONE_IDS[nth_drone],
+                                 i,
+                                 forceObj=[0, 0, forces[i]],
+                                 posObj=[0, 0, 0],
+                                 flags=p.LINK_FRAME,
+                                 physicsClientId=self.CLIENT
+                                 )
+        p.applyExternalTorque(self.DRONE_IDS[nth_drone],
+                              4,
+                              torqueObj=[0, 0, z_torque],
+                              flags=p.LINK_FRAME,
+                              physicsClientId=self.CLIENT
+                              )
+        # Hanyang: Apply disturbances (torques) 
+        p.applyExternalTorque(self.DRONE_IDS[nth_drone],
+                              4,
+                              torqueObj=[disturbances[0], 0, 0],
+                              flags=p.LINK_FRAME,
+                              physicsClientId=self.CLIENT
+                              )
+        p.applyExternalTorque(self.DRONE_IDS[nth_drone],
+                              4,
+                              torqueObj=[0, disturbances[1], 0],
+                              flags=p.LINK_FRAME,
+                              physicsClientId=self.CLIENT
+                              )
+        # p.applyExternalTorque(self.DRONE_IDS[nth_drone],
+        #                       4,
+        #                       torqueObj=[0, 0, disturbances[2]],
+        #                       flags=p.LINK_FRAME,
+        #                       physicsClientId=self.CLIENT
+        #                       )
+    
+
+    def _physics_pwm(self,
+                 pwm,
+                 disturbances, 
+                 nth_drone
+                 ):
+        """Base PyBullet physics implementation.
+
+        Parameters
+        ----------
+        pwm : ndarray
+            (4)-shaped array of ints containing the RPMs values of the 4 motors.
+        disturbances : ndarray
+            (3)-shaped array of floats containin 
+        nth_drone : int
+            The ordinal number/position of the desired drone in list self.DRONE_IDS.
+
+        """
+        thrust_normed = pwm / 60000  # cast into [0, 1]
+        forces = self.MAX_THRUST * np.clip(thrust_normed, 0, 1)  # self.angvel2thrust(n)
+        torques = 5.96e-3 * forces + 1.56e-5  # # Parameters from Julian Förster
+        z_torque = (-torques[0] + torques[1] - torques[2] + torques[3])
+
+        if self.DRONE_MODEL == DroneModel.RACE:
+            torques = -torques
+        # Hanyang: debug
+        # print(f"The forces are {forces}")
+        # print(f"The z_torques are {z_torque}")
         for i in range(4):
             p.applyExternalForce(self.DRONE_IDS[nth_drone],
                                  i,
@@ -1015,6 +1073,8 @@ class BaseDistbEnv(gym.Env):
                             )
         #### Store the roll, pitch, yaw rates for the next step ####
         self.rpy_rates[nth_drone,:] = rpy_rates
+    
+
 
     def _integrateQ(self, quat, omega, dt):
         omega_norm = np.linalg.norm(omega)
