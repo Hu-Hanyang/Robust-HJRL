@@ -199,8 +199,10 @@ class HoverFixedDistbEnv(BaseDistbRLEnv):
         
         return info #### Calculated by the Deep Thought supercomputer in 7.5M years
 
+####################################################################
 
-class HoverBoltzmannDistbEnv(HoverFixedDistbEnv):
+
+class HoverBoltzmannDistbEnv(BaseDistbRLEnv):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
@@ -208,7 +210,7 @@ class HoverBoltzmannDistbEnv(HoverFixedDistbEnv):
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
                  disturbance_type = 'boltzmann',
-                 distb_level: float=0.0,
+                 distb_level: float=1.0,
                  initial_xyzs=np.array([[0, 0, 1]], dtype=np.float32),  # default 1 drone at [0, 0, 1]
                  initial_rpys=np.zeros((1, 3)),
                  physics: Physics=Physics.PYB,
@@ -289,3 +291,109 @@ class HoverBoltzmannDistbEnv(HoverFixedDistbEnv):
         print(f" \n The HoverBoltzmannDistbEnv is with {disturbance_type} distb type and {distb_level} distb level. \n")
 
     ################################################################################
+    
+    def _computeReward(self, clipped_action):
+        # TODO: transfer our former _computeReward method here, done
+        """Computes the current reward value.
+
+        Parameters
+        ----------
+        clipped_action : ndarray | dict[..]
+            The input action for one or more drones.
+
+        Returns
+        -------
+        float
+            The reward.
+
+        """
+        state = self._getDroneStateVector(0)  # state.shape = (20,) state = [pos, quat, rpy, vel, ang_vel, last_clipped_action]
+        
+        normed_clipped_a = 0.5 * (np.clip(clipped_action, -1, 1) + 1)
+
+        penalty_action = self.penalty_action * np.linalg.norm(normed_clipped_a)
+        penalty_rpy_dot = self.penalty_angle_rate * np.linalg.norm(state[13:16])
+        penalty_terminal = self.penalty_terminal if self._computeTerminated() else 0.  # Hanyang: try larger crash penalty
+
+        penalties = np.sum([penalty_action, penalty_rpy_dot, penalty_terminal])
+        dist = np.linalg.norm(state[0:3] - self.TARGET_POS)
+        reward = -dist - penalties
+        
+        self.current_penalty = penalties  # Hanyang: log the current penalty
+        self.current_dist = dist
+        self.current_reward = reward
+
+        return reward
+
+    ################################################################################
+    
+    def _computeTerminated(self):
+        # TODO: transfer our former _computeTerminated method here, done
+        """Computes the current done value.
+        done = True if either the rp or rpy_dot or z hits the limits
+
+        Returns
+        -------
+        bool
+            Whether the current episode is done.
+
+        """
+        state = self._getDroneStateVector(0)  # state.shape = (20,) state = [pos, quat, rpy, vel, ang_vel, last_clipped_action]
+        # position_limit = abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0
+        rp = state[7:9]  # rad
+        rp_limit = rp[np.abs(rp) > self.rp_limit].any()
+        rpy_dot = state[13:16]  # rad/s
+        rpy_dot_limit = rpy_dot[np.abs(rpy_dot) > self.rpy_dot_limit].any()
+        z = state[2]  # m
+        z_limit = z <= self.z_lim
+
+        # done = True if position_limit or rp_limit or rpy_dot_limit or z_limit else False
+        done = True if rp_limit or rpy_dot_limit or z_limit else False
+        
+        return done
+        
+    ################################################################################
+    
+    def _computeTruncated(self):
+        # TODO: not sure correct or not
+        """Computes the current truncated value.
+
+        Returns
+        -------
+        bool
+            Whether the current episode timed out.
+
+        """
+        # state = self._getDroneStateVector(0)
+        # if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 # Truncate when the drone is too far away
+        #      or abs(state[7]) > .4 or abs(state[8]) > .4 # Truncate when the drone is too tilted
+        # ):
+        #     return True
+        if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
+            return True
+        else:
+            return False
+
+    ################################################################################
+    
+    def _computeInfo(self):
+        # TODO: transfer our former _computeInfo method here, done
+        """Computes the current info dict(s).
+
+        Unused.
+
+        Returns
+        -------
+        dict[str, int]
+            Dummy value.
+
+        """
+        info = {}
+        info['current_position'] = self._getDroneStateVector(0)[0:3]
+        info['current_rpy'] = self._getDroneStateVector(0)[7:10]
+        info['current_velocity'] = self._getDroneStateVector(0)[10:13]
+        info['current_penalty'] = self.current_penalty
+        info['current_dist'] = self.current_dist
+        info['current_reward'] = self.current_reward
+        
+        return info #### Calculated by the Deep Thought supercomputer in 7.5M years
