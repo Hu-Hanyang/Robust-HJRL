@@ -95,7 +95,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
 
     ################################################################################
     
-    def _computeReward(self, clipped_action):
+    def _computeReward(self, action):
         # TODO: transfer our former _computeReward method here, done
         """Computes the current reward value.
 
@@ -112,7 +112,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
         """
         state = self._getDroneStateVector(0)  # state.shape = (20,) state = [pos, quat, rpy, vel, ang_vel, last_clipped_action]
         
-        normed_clipped_a = 0.5 * (np.clip(clipped_action, -1, 1) + 1)
+        normed_clipped_a = 0.5 * (np.clip(action, -1, 1) + 1)
 
         penalty_action = self.penalty_action * np.linalg.norm(normed_clipped_a)
         penalty_rpy_dot = self.penalty_angle_rate * np.linalg.norm(state[13:16])

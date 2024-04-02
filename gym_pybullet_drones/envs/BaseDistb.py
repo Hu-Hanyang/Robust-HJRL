@@ -442,7 +442,7 @@ class BaseDistbEnv(gym.Env):
         self._updateAndStoreKinematicInformation()
         #### Prepare the return values #############################
         obs = self._computeObs()
-        reward = self._computeReward(clipped_action)
+        reward = self._computeReward(action)
         terminated = self._computeTerminated()
         truncated = self._computeTruncated()
         info = self._computeInfo()
