@@ -78,7 +78,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
         # Set the limits for states
         self.rp_limit = 75 * self.DEG2RAD  # rad
         self.rpy_dot_limit = 1000 * self.DEG2RAD  # rad/s
-        self.z_lim = 0.2  # m
+        self.z_lim = 0.1  # m
 
         # Set the penalties
         self.penalty_action =1e-4
@@ -211,7 +211,7 @@ class HoverFixedDistbEnv(HoverDistbEnv):
         # Set disturbance_type to 'fixed' regardless of the input
         kwargs['disturbance_type'] = 'fixed'
         kwargs['distb_level'] = 1.0
-        kwargs['randomization_reset'] = False
+        kwargs['randomization_reset'] = True
         kwargs['record'] = True
         super().__init__(*args, **kwargs)  # distb_level=distb_level, randomization_reset=randomization_reset,
 

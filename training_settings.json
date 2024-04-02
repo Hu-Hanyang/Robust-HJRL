@@ -1,5 +1,5 @@
 {   
-    "n_envs": 32,  
+    "n_envs": 20,  
     "train_seed": 0,
     "batch_size": 32,
     "n_epochs": 15,
