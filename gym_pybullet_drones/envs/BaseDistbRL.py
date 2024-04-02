@@ -262,6 +262,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
             else:
                 print("[ERROR] in BaseDistbRLEnv._preprocessAction()")
                 exit()
+        # print(f"The shape of the PWM in self._preprocessAction is {rpm.shape}")
         return rpm
 
     ################################################################################
@@ -360,11 +361,14 @@ class BaseDistbRLEnv(BaseDistbEnv):
             obs_17 = np.zeros((self.NUM_DRONES, 17))
             for i in range(self.NUM_DRONES):
                 #obs = self._clipAndNormalizeState(self._getDroneStateVector(i))
-                obs = self._getDroneStateVector(i)  # state.shape = (20,), state = np.array(pos, quat, rpy, vel, ang_v, last_clipped_action)
+                obs = self._getDroneStateVector(i)  # state.shape = (20,), state = np.array(pos, quat, rpy, vel, ang_v, last_action)
+                # print(f"The shape of the obs is {obs.shape}")
                 # obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)
                 obs_17[i, :] = np.hstack([obs[0:3], obs[3:7], obs[10:13], obs[13:16], obs[16:20]]).reshape(17,)  # state = np.array(pos, quat, vel, ang_v, last_clipped_action)
+                
             # ret = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
             ret = np.array([obs_17[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
+            # print(f"The shape of the ret is {ret.shape}")
             #### Add action buffer to observation #######################
             # for i in range(self.ACTION_BUFFER_SIZE):
             #     ret = np.hstack([ret, np.array([self.action_buffer[i][j, :] for j in range(self.NUM_DRONES)])])
