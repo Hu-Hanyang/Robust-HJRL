@@ -1,5 +1,5 @@
 import numpy as np
-from gym_pybullet_drones.envs.HoverDistb import HoverDistbEnv
+from gym_pybullet_drones.envs.HoverDistb import HoverFixedDistbEnv
 from gym_pybullet_drones.envs.HoverAviary import HoverAviary
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
@@ -20,7 +20,7 @@ def create_gif(image_list, filename, duration=0.1):
 
 
 # Check the env
-env = HoverDistbEnv(disturbance_type='fixed', distb_level=0.0, record=True, randomization_reset=False)
+env = HoverFixedDistbEnv(disturbance_type='fixed', distb_level=0.0, record=True, randomization_reset=False)
 # check_env(env)
 # init_obs, init_info = env.reset()
 # print(f"The init_obs shape is {init_obs.shape}")

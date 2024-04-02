@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 from gymnasium.core import Env
 
-from gym_pybullet_drones.envs.HoverDistb import HoverDistbEnv
+from gym_pybullet_drones.envs.HoverDistb import HoverFixedDistbEnv
 
 import gymnasium as gym
 import numpy as np
@@ -106,11 +106,11 @@ class Args:
 def make_env(distb_type, distb_level, idx, capture_video, run_name):
     def thunk():
         if capture_video and idx == 0:
-            env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level)
+            env = HoverFixedDistbEnv(disturbance_type=distb_type, distb_level=distb_level)
             # env = gym.make(env_id, render_mode="rgb_array")
             env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
         else:
-            env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level)
+            env = HoverFixedDistbEnv(disturbance_type=distb_type, distb_level=distb_level)
         env = gym.wrappers.FlattenObservation(env)
         env = FlattenAction(env)
         env = gym.wrappers.RecordEpisodeStatistics(env)

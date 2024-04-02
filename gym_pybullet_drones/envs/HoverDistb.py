@@ -3,15 +3,15 @@ import numpy as np
 from gym_pybullet_drones.envs.BaseDistbRL import BaseDistbRLEnv
 from gym_pybullet_drones.utils.enums import DroneModel, Physics, ActionType, ObservationType
 
-class HoverDistbEnv(BaseDistbRLEnv):
+class HoverFixedDistbEnv(BaseDistbRLEnv):
     """Single agent RL problem: hover at position."""
 
     ################################################################################
     
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
-                 disturbance_type = 'boltzmann',
-                 distb_level: float=0.0,
+                 disturbance_type = 'fixed',
+                 distb_level: float=1.0,
                  initial_xyzs=np.array([[0, 0, 1]], dtype=np.float32),  # default 1 drone at [0, 0, 1]
                  initial_rpys=np.zeros((1, 3)),
                  physics: Physics=Physics.PYB,
@@ -87,6 +87,9 @@ class HoverDistbEnv(BaseDistbRLEnv):
         self.current_penalty = 0.0  # Hanyang: log the current penalty
         self.current_dist = 0.0  # Hanyang: log the current distance to the target
         self.current_reward = 0.0 # Hanyang: log the current reward
+
+        # Print the environment info
+        print(f" \n The HoverDistbEnv is with {disturbance_type} distb type and {distb_level} distb level. \n")
 
     ################################################################################
     
@@ -195,3 +198,94 @@ class HoverDistbEnv(BaseDistbRLEnv):
         info['current_reward'] = self.current_reward
         
         return info #### Calculated by the Deep Thought supercomputer in 7.5M years
+
+
+class HoverBoltzmannDistbEnv(HoverFixedDistbEnv):
+    """Single agent RL problem: hover at position."""
+
+    ################################################################################
+    
+    def __init__(self,
+                 drone_model: DroneModel=DroneModel.CF2X,
+                 disturbance_type = 'boltzmann',
+                 distb_level: float=0.0,
+                 initial_xyzs=np.array([[0, 0, 1]], dtype=np.float32),  # default 1 drone at [0, 0, 1]
+                 initial_rpys=np.zeros((1, 3)),
+                 physics: Physics=Physics.PYB,
+                 pyb_freq: int = 200,
+                 ctrl_freq: int = 100,
+                 gui=False,
+                 record=False,
+                 obs: ObservationType=ObservationType.KIN,
+                 act: ActionType=ActionType.PWM, 
+                 output_folder='results',
+                 randomization_reset=True
+                 ):
+        """Initialization of a single agent RL environment.
+
+        Using the generic single agent RL superclass.
+
+        Parameters
+        ----------
+        drone_model : DroneModel, optional
+            The desired drone type (detailed in an .urdf file in folder `assets`).
+        disturbance_type : str, optional
+            The type of disturbance to be applied to the drones [None, 'fixed', 'boltzmann', 'random', 'rarl', 'rarl-population'].
+        initial_xyzs: ndarray | None, optional
+            (NUM_DRONES, 3)-shaped array containing the initial XYZ position of the drones.
+        initial_rpys: ndarray | None, optional
+            (NUM_DRONES, 3)-shaped array containing the initial orientations of the drones (in radians).
+        physics : Physics, optional
+            The desired implementation of PyBullet physics/custom dynamics.
+        pyb_freq : int, optional
+            The frequency at which PyBullet steps (a multiple of ctrl_freq).
+        ctrl_freq : int, optional
+            The frequency at which the environment steps.
+        gui : bool, optional
+            Whether to use PyBullet's GUI.
+        record : bool, optional
+            Whether to save a video of the simulation.
+        obs : ObservationType, optional
+            The type of observation space (kinematic information or vision)
+        act : ActionType, optional
+            The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
+
+        """
+        self.TARGET_POS = np.array([0,0,1])
+        self.EPISODE_LEN_SEC = 8
+
+        super().__init__(drone_model=drone_model,
+                         num_drones=1,
+                         disturbance_type=disturbance_type,
+                         distb_level=distb_level,
+                         initial_xyzs=initial_xyzs,
+                         initial_rpys=initial_rpys,
+                         physics=physics,
+                         pyb_freq=pyb_freq,
+                         ctrl_freq=ctrl_freq,
+                         gui=gui,
+                         record=record,
+                         obs=obs,
+                         act=act,
+                         output_folder=output_folder,
+                         randomization_reset=randomization_reset
+                         )
+        # Set the limits for states
+        self.rp_limit = 60 * self.DEG2RAD  # rad
+        self.rpy_dot_limit = 300 * self.DEG2RAD  # rad/s
+        self.z_lim = 0.05  # m
+
+        # Set the penalties
+        self.penalty_action =1e-4
+        self.penalty_angle_rate = 1e-3
+        self.penalty_terminal = 100
+        
+        # Log the episode info
+        self.current_penalty = 0.0  # Hanyang: log the current penalty
+        self.current_dist = 0.0  # Hanyang: log the current distance to the target
+        self.current_reward = 0.0 # Hanyang: log the current reward
+
+        # Print the environment info
+        print(f" \n The HoverBoltzmannDistbEnv is with {disturbance_type} distb type and {distb_level} distb level. \n")
+
+    ################################################################################
