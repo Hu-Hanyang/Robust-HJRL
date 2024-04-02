@@ -253,7 +253,7 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
 
 
     #### Create the environment ################################
-
+    #TODO: Hanyang: remember to config the env everytime here in the class!!!!!
     if not multiagent:
         train_env = make_vec_env(HoverDistbEnv,
                                  env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),

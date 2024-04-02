@@ -415,7 +415,7 @@ class BaseDistbEnv(gym.Env):
                 _, disturbances = distur_gener(current_state, self.distb_level)
 
                 if self.PHYSICS == Physics.PYB:
-                    self._physics(clipped_action[i, :], disturbances, i)
+                    # self._physics(clipped_action[i, :], disturbances, i)
                     self._physics_pwm(clipped_action[i, :], disturbances, i)
                 elif self.PHYSICS == Physics.DYN:
                     self._dynamics(clipped_action[i, :], i)
@@ -868,6 +868,7 @@ class BaseDistbEnv(gym.Env):
 
         """
         thrust_normed = pwm / 60000  # cast into [0, 1]
+        #TODO: Hanyang: the former one used is motor model, in agents.py, disturbance-CrazyFlie-simulation
         forces = self.MAX_THRUST * np.clip(thrust_normed, 0, 1)  # self.angvel2thrust(n)
         torques = 5.96e-3 * forces + 1.56e-5  # # Parameters from Julian Förster
         z_torque = (-torques[0] + torques[1] - torques[2] + torques[3])

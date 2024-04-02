@@ -10,7 +10,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
     
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
-                 disturbance_type = 'fixed',
+                 disturbance_type = 'boltzmann',
                  distb_level: float=0.0,
                  initial_xyzs=np.array([[0, 0, 1]], dtype=np.float32),  # default 1 drone at [0, 0, 1]
                  initial_rpys=np.zeros((1, 3)),

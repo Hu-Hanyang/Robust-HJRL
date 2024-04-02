@@ -49,7 +49,7 @@ while num < num_gifs:
             obs = init_obs
             
         # manual control
-        motor = 0.0
+        motor = -1.0
         action = np.array([[motor, motor, motor, motor]])
         # random control
         # action = env.action_space.sample()
