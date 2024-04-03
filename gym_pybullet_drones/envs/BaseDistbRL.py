@@ -210,7 +210,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
             if self.ACT_TYPE == ActionType.RPM:
                 rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))  # 88052 * (1+0.05* [-1 ,+1]) [83649.4, 92454.6]
                 # print(f"The RPM is {rpm[k,:]}")
-            # Hanyang: add PWM action typea
+            # Hanyang: add PWM action type
             # Just for usage, use varbiables rpm to store the PWM values
             elif self.ACT_TYPE == ActionType.PWM:
                 for n in range(self.NUM_DRONES):

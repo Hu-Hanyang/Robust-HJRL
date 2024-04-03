@@ -82,6 +82,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
 
         # Set the penalties
         self.penalty_action =1e-4
+        self.penalty_angle = 1e-2
         self.penalty_angle_rate = 1e-3
         self.penalty_terminal = 100
         
@@ -115,10 +116,11 @@ class HoverDistbEnv(BaseDistbRLEnv):
         normed_clipped_a = 0.5 * (np.clip(action, -1, 1) + 1)
 
         penalty_action = self.penalty_action * np.linalg.norm(normed_clipped_a)
+        penalty_rpy = self.penalty_angle * np.linalg.norm(state[7:10])
         penalty_rpy_dot = self.penalty_angle_rate * np.linalg.norm(state[13:16])
         penalty_terminal = self.penalty_terminal if self._computeTerminated() else 0.  # Hanyang: try larger crash penalty
 
-        penalties = np.sum([penalty_action, penalty_rpy_dot, penalty_terminal])
+        penalties = np.sum([penalty_action, penalty_rpy, penalty_rpy_dot, penalty_terminal])
         dist = np.linalg.norm(state[0:3] - self.TARGET_POS)
         reward = -dist - penalties
         
@@ -131,7 +133,6 @@ class HoverDistbEnv(BaseDistbRLEnv):
     ################################################################################
     
     def _computeTerminated(self):
-        # TODO: transfer our former _computeTerminated method here, done
         """Computes the current done value.
         done = True if either the rp or rpy_dot or z hits the limits
 
@@ -210,8 +211,8 @@ class HoverFixedDistbEnv(HoverDistbEnv):
     def __init__(self, *args,  **kwargs):  # distb_level=1.0, randomization_reset=False,
         # Set disturbance_type to 'fixed' regardless of the input
         kwargs['disturbance_type'] = 'fixed'
-        kwargs['distb_level'] = 1.0
-        kwargs['randomization_reset'] = True
+        kwargs['distb_level'] = 0.0
+        kwargs['randomization_reset'] = False
         kwargs['record'] = True
         super().__init__(*args, **kwargs)  # distb_level=distb_level, randomization_reset=randomization_reset,
 

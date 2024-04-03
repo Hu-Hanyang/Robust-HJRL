@@ -50,3 +50,9 @@ Somethings to do:
 3. As for the original env, remove all the noisy things and train the policy again;
 4. Implement different method: use Boltzmann distribution with one fixed disturbance level;
 5. Revise the draft: point out the former drawbacks and corresponding our method to fix those problems.
+
+#### 4.2
+Implement PWM control signal.
+
+#### 4.3
+Train new reward function in env with distb=0.0 and no initial randomization: training_results_sb3/fixed-distb_level_0.0/seed_42/save-2024.04.03_15:54

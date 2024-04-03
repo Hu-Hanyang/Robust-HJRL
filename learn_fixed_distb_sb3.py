@@ -226,7 +226,7 @@ class CustomMonitor(Monitor):
     
     
 
-def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, settings="training_settings.json"):
+def train(distb_type='fixed', distb_level=0.0, seed=42,  multiagent=False, settings="training_settings.json"):
     
     #### Make save path ###################################
     if distb_type == 'fixed' or None:
@@ -272,15 +272,14 @@ def train(distb_type='fixed', distb_level=0.0, seed=40226,  multiagent=False, se
     print('[INFO] Action space:', train_env.action_space)
     print('[INFO] Observation space:', train_env.observation_space)
     #### Train the model #######################################
-    policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[50, 50], vf=[64, 64]), log_std_init=-1.5)
+    # policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[50, 50], vf=[64, 64]), log_std_init=-1.5)
     model = PPO('MlpPolicy',
                 train_env,
                 batch_size=batch_size,
                 n_epochs=n_epochs,
                 n_steps=n_steps,
                 seed=seed,
-                target_kl=target_kl,
-                policy_kwargs=policy_kwargs,
+                target_kl=target_kl, # policy_kwargs=policy_kwargs,
                 tensorboard_log=filename+'/tb/',
                 verbose=1)
 
