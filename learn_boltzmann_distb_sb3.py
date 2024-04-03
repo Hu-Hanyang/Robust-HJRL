@@ -226,7 +226,7 @@ class CustomMonitor(Monitor):
     
     
 
-def train(distb_type='boltzmann', distb_level=0.0, seed=40226,  multiagent=False, settings="training_settings.json"):
+def train(distb_type='boltzmann', distb_level=0.0, seed=42,  multiagent=False, settings="training_settings.json"):
     
     #### Make save path ###################################
     if distb_type == 'fixed' or None:
