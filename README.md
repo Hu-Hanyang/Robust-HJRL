@@ -55,4 +55,7 @@ Somethings to do:
 Implement PWM control signal.
 
 #### 4.3
-Train new reward function in env with distb=0.0 and no initial randomization: training_results_sb3/fixed-distb_level_0.0/seed_42/save-2024.04.03_15:54
+Train new reward function (add rpy penalty) in env with distb=0.0 and no initial randomization: training_results_sb3/fixed-distb_level_0.0/seed_42/save-2024.04.03_15:54
+training_results_sb3/boltzmann/seed_42/save-2024.04.03_16:25
+
+#### 4.4 

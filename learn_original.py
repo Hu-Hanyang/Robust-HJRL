@@ -35,7 +35,7 @@ from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
 DEFAULT_GUI = True
 DEFAULT_RECORD_VIDEO = False
-DEFAULT_OUTPUT_FOLDER = 'results'
+DEFAULT_OUTPUT_FOLDER = 'training_results_sb3/'
 DEFAULT_COLAB = False
 
 DEFAULT_OBS = ObservationType('kin') # 'kin' or 'rgb'
@@ -45,59 +45,67 @@ DEFAULT_MA = False
 
 def run(multiagent=DEFAULT_MA, output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_GUI, plot=True, colab=DEFAULT_COLAB, record_video=DEFAULT_RECORD_VIDEO, local=True):
 
-    filename = os.path.join(output_folder, 'save-'+datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
-    if not os.path.exists(filename):
-        os.makedirs(filename+'/')
+    # # filename = os.path.join(output_folder, 'save-'+datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
+    filename = os.path.join(output_folder, "original", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+    # if not os.path.exists(filename):
+    #     os.makedirs(filename+'/')
 
-    if not multiagent:
-        train_env = make_vec_env(HoverAviary,
-                                 env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
-                                 n_envs=1,
-                                 seed=0
-                                 )
-        eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
-    else:
-        train_env = make_vec_env(MultiHoverAviary,
-                                 env_kwargs=dict(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT),
-                                 n_envs=1,
-                                 seed=0
-                                 )
-        eval_env = MultiHoverAviary(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    # if not multiagent:
+    #     train_env = make_vec_env(HoverAviary,
+    #                              env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
+    #                              n_envs=1,
+    #                              seed=0
+    #                              )
+    #     eval_env = HoverAviary(obs=DEFAULT_OBS, act=DEFAULT_ACT)
+    # else:
+    #     train_env = make_vec_env(MultiHoverAviary,
+    #                              env_kwargs=dict(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT),
+    #                              n_envs=1,
+    #                              seed=0
+    #                              )
+    #     eval_env = MultiHoverAviary(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
-    #### Check the environment's spaces ########################
-    print('[INFO] Action space:', train_env.action_space)
-    print('[INFO] Observation space:', train_env.observation_space)
+    # #### Check the environment's spaces ########################
+    # print('[INFO] Action space:', train_env.action_space)
+    # print('[INFO] Observation space:', train_env.observation_space)
 
-    #### Train the model #######################################
-    model = PPO('MlpPolicy',
-                train_env,
-                # tensorboard_log=filename+'/tb/',
-                verbose=1)
+    # #### Train the model #######################################
+    # model = PPO('MlpPolicy',
+    #             train_env,
+    #             tensorboard_log=filename+'/tb/',
+    #             verbose=1)
 
-    #### Target cumulative rewards (problem-dependent) ##########
-    if DEFAULT_ACT == ActionType.ONE_D_RPM:
-        target_reward = 474.15 if not multiagent else 949.5
-    else:
-        target_reward = 467. if not multiagent else 920.
-    callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
-                                                     verbose=1)
-    eval_callback = EvalCallback(eval_env,
-                                 callback_on_new_best=callback_on_best,
-                                 verbose=1,
-                                 best_model_save_path=filename+'/',
-                                 log_path=filename+'/',
-                                 eval_freq=int(1000),
-                                 deterministic=True,
-                                 render=False)
-    model.learn(total_timesteps=int(1e7) if local else int(1e2), # shorter training in GitHub Actions pytest
-                callback=eval_callback,
-                log_interval=100)
+    # #### Target cumulative rewards (problem-dependent) ##########
+    # if DEFAULT_ACT == ActionType.ONE_D_RPM:
+    #     target_reward = 474.15 if not multiagent else 949.5
+    # else:
+    #     target_reward = 467. if not multiagent else 920.
+    # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
+    #                                                  verbose=1)
+    # eval_callback = EvalCallback(eval_env,
+    #                              callback_on_new_best=callback_on_best,
+    #                              verbose=1,
+    #                              best_model_save_path=filename+'/',
+    #                              log_path=filename+'/',
+    #                              eval_freq=int(1000),
+    #                              deterministic=True,
+    #                              render=False)
+    
+    # print("Start training")
+    # start_time = time.perf_counter()
+    # model.learn(total_timesteps=int(1e7) if local else int(1e2), # shorter training in GitHub Actions pytest
+    #             callback=eval_callback,
+    #             log_interval=100)
 
-    #### Save the model ########################################
-    model.save(filename+'/final_model.zip')
-    print(filename)
+    # #### Save the model ########################################
+    # model.save(filename+'/final_model.zip')
+    # print(filename)
+    # duration = time.perf_counter() - start_time
+    # print(f"The time of training is {duration//3600}hours-{(duration%3600)//60}minutes-{(duration%3600)%60}seconds. \n")
+    
 
     #### Print training progression ############################
+    filename = "training_results_sb3/original/save-2024.04.04_12:16"
     with np.load(filename+'/evaluations.npz') as data:
         for j in range(data['timesteps'].shape[0]):
             print(str(data['timesteps'][j])+","+str(data['results'][j][0]))
@@ -108,11 +116,11 @@ def run(multiagent=DEFAULT_MA, output_folder=DEFAULT_OUTPUT_FOLDER, gui=DEFAULT_
     ############################################################
     ############################################################
 
-    if local:
-        input("Press Enter to continue...")
+    # if local:
+    #     input("Press Enter to continue...")
 
-    # if os.path.isfile(filename+'/final_model.zip'):
-    #     path = filename+'/final_model.zip'
+    if os.path.isfile(filename+'/final_model.zip'):
+        path = filename+'/final_model.zip'
     if os.path.isfile(filename+'/best_model.zip'):
         path = filename+'/best_model.zip'
     else:

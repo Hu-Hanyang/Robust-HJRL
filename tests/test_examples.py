@@ -11,5 +11,5 @@ def test_downwash():
     run(gui=False, plot=False, output_folder='tmp')
 
 def test_learn():
-    from gym_pybullet_drones.examples.learn import run
+    from learn_original import run
     run(gui=False, plot=False, output_folder='tmp', local=False)
