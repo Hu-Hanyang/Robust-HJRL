@@ -116,11 +116,13 @@ class HoverDistbEnv(BaseDistbRLEnv):
         normed_clipped_a = 0.5 * (np.clip(action, -1, 1) + 1)
 
         penalty_action = self.penalty_action * np.linalg.norm(normed_clipped_a)
-        penalty_rpy = self.penalty_angle * np.linalg.norm(state[7:10])
+        # penalty_rpy = self.penalty_angle * np.linalg.norm(state[7:10])
         penalty_rpy_dot = self.penalty_angle_rate * np.linalg.norm(state[13:16])
         penalty_terminal = self.penalty_terminal if self._computeTerminated() else 0.  # Hanyang: try larger crash penalty
 
-        penalties = np.sum([penalty_action, penalty_rpy, penalty_rpy_dot, penalty_terminal])
+        # penalties = np.sum([penalty_action, penalty_rpy, penalty_rpy_dot, penalty_terminal])
+        penalties = np.sum([penalty_action, penalty_rpy_dot, penalty_terminal])
+
         dist = np.linalg.norm(state[0:3] - self.TARGET_POS)
         reward = -dist - penalties
         
