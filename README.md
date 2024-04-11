@@ -59,3 +59,4 @@ Train new reward function (add rpy penalty) in env with distb=0.0 and no initial
 training_results_sb3/boltzmann/seed_42/save-2024.04.03_16:25
 
 #### 4.4 
+All failed.
