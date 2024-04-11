@@ -385,26 +385,11 @@ class BaseDistbEnv(gym.Env):
             clipped_action = np.reshape(self._preprocessAction(action), (self.NUM_DRONES, 4))  # the shape of the clipped_action is (NUM_DRONES, 4)
             # print(f"The shape of the clipped_action is {clipped_action.shape} in the function step")
         #### Repeat for as many as the aggregate physics steps #####
-        if self.distb_type == None:
-                assert self.distb_level == 0.0, "distb_level should be 0.0 when distb_type is None"
-        elif self.distb_type == 'fixed':
-            assert self.distb_level in np.arange(0.0, 2.1, 0.1), "distb_level should be in np.arange(0.0, 2.1, 0.1)"
-
         for _ in range(self.PYB_STEPS_PER_CTRL):
             #### Update and store the drones kinematic info for certain
             #### Between aggregate steps for certain types of update ###
             if self.PYB_STEPS_PER_CTRL > 1 and self.PHYSICS in [Physics.DYN, Physics.PYB_GND, Physics.PYB_DRAG, Physics.PYB_DW, Physics.PYB_GND_DRAG_DW]:
                 self._updateAndStoreKinematicInformation()
-            
-            # #### Generate the disturance ################################
-            # if self.distb_type == 'boltzmann':
-            #     self.distb_level = Boltzmann(low=0.0, high=2.1, accuracy=0.1)
-            # elif self.distb_type == 'random':
-            #     self.distb_level = np.round(np.random.uniform(0.0, 2.1), 1)
-            # elif self.distb_type == 'rarl':
-            #     print("RARL has not been implemented yet")
-            # elif self.distb_type == 'rarl-population':
-            #     print("RARL-population has not been implemented yet")
         
             #### Step the simulation using the desired physics update ##
             for i in range (self.NUM_DRONES):
@@ -554,14 +539,20 @@ class BaseDistbEnv(gym.Env):
             self.rpy_rates = np.zeros((self.NUM_DRONES, 3))
         
         #### Set the disturance level self.distb_level ################################
-            if self.distb_type == 'boltzmann':
-                self.distb_level = Boltzmann(low=0.0, high=2.1, accuracy=0.1)
-            elif self.distb_type == 'random':
-                self.distb_level = np.round(np.random.uniform(0.0, 2.1), 1)
-            elif self.distb_type == 'rarl':
-                print("RARL has not been implemented yet")
-            elif self.distb_type == 'rarl-population':
-                print("RARL-population has not been implemented yet")
+        if self.distb_type == 'boltzmann':
+            self.distb_level = Boltzmann(low=0.0, high=2.1, accuracy=0.1)
+        elif self.distb_type == 'random':
+            self.distb_level = np.round(np.random.uniform(0.0, 2.1), 1)
+        elif self.distb_type == 'rarl':
+            print("RARL has not been implemented yet")
+        elif self.distb_type == 'rarl-population':
+            print("RARL-population has not been implemented yet")
+        
+        ### Check the validity of the disturbance level ################
+        if self.distb_type == None:
+                assert self.distb_level == 0.0, "distb_level should be 0.0 when distb_type is None"
+        elif self.distb_type == 'fixed':
+            assert self.distb_level in np.arange(0.0, 2.1, 0.1), "distb_level should be in np.arange(0.0, 2.1, 0.1)"
             
         #### Set PyBullet's parameters ############################# 
         p.setGravity(0, 0, -self.G, physicsClientId=self.CLIENT)
