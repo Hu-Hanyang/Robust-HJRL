@@ -332,33 +332,33 @@ class BaseDistbEnv(gym.Env):
 
         """
         #### Save PNG video frames if RECORD=True and GUI=False ####
-        if self.RECORD and not self.GUI and self.step_counter%self.CAPTURE_FREQ == 0:
-            [w, h, rgb, dep, seg] = p.getCameraImage(width=self.VID_WIDTH,
-                                                     height=self.VID_HEIGHT,
-                                                     shadow=1,
-                                                     viewMatrix=self.CAM_VIEW,
-                                                     projectionMatrix=self.CAM_PRO,
-                                                     renderer=p.ER_TINY_RENDERER,
-                                                     flags=p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX,
-                                                     physicsClientId=self.CLIENT
-                                                     )
-            (Image.fromarray(np.reshape(rgb, (h, w, 4)), 'RGBA')).save(os.path.join(self.IMG_PATH, "frame_"+str(self.FRAME_NUM)+".png"))
-            # self.frames.append(np.reshape(rgb, (h, w, 4)))
-            #### Save the depth or segmentation view instead #######
-            # dep = ((dep-np.min(dep)) * 255 / (np.max(dep)-np.min(dep))).astype('uint8')
-            # (Image.fromarray(np.reshape(dep, (h, w)))).save(self.IMG_PATH+"frame_"+str(self.FRAME_NUM)+".png")
-            # seg = ((seg-np.min(seg)) * 255 / (np.max(seg)-np.min(seg))).astype('uint8')
-            # (Image.fromarray(np.reshape(seg, (h, w)))).save(self.IMG_PATH+"frame_"+str(self.FRAME_NUM)+".png")
-            self.FRAME_NUM += 1
-            if self.VISION_ATTR:
-                for i in range(self.NUM_DRONES):
-                    self.rgb[i], self.dep[i], self.seg[i] = self._getDroneImages(i)
-                    #### Printing observation to PNG frames example ############
-                    self._exportImage(img_type=ImageType.RGB, # ImageType.BW, ImageType.DEP, ImageType.SEG
-                                    img_input=self.rgb[i],
-                                    path=self.ONBOARD_IMG_PATH+"/drone_"+str(i)+"/",
-                                    frame_num=int(self.step_counter/self.IMG_CAPTURE_FREQ)
-                                    )
+        # if self.RECORD and not self.GUI and self.step_counter%self.CAPTURE_FREQ == 0:
+        #     [w, h, rgb, dep, seg] = p.getCameraImage(width=self.VID_WIDTH,
+        #                                              height=self.VID_HEIGHT,
+        #                                              shadow=1,
+        #                                              viewMatrix=self.CAM_VIEW,
+        #                                              projectionMatrix=self.CAM_PRO,
+        #                                              renderer=p.ER_TINY_RENDERER,
+        #                                              flags=p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX,
+        #                                              physicsClientId=self.CLIENT
+        #                                              )
+        #     (Image.fromarray(np.reshape(rgb, (h, w, 4)), 'RGBA')).save(os.path.join(self.IMG_PATH, "frame_"+str(self.FRAME_NUM)+".png"))
+        #     # self.frames.append(np.reshape(rgb, (h, w, 4)))
+        #     #### Save the depth or segmentation view instead #######
+        #     # dep = ((dep-np.min(dep)) * 255 / (np.max(dep)-np.min(dep))).astype('uint8')
+        #     # (Image.fromarray(np.reshape(dep, (h, w)))).save(self.IMG_PATH+"frame_"+str(self.FRAME_NUM)+".png")
+        #     # seg = ((seg-np.min(seg)) * 255 / (np.max(seg)-np.min(seg))).astype('uint8')
+        #     # (Image.fromarray(np.reshape(seg, (h, w)))).save(self.IMG_PATH+"frame_"+str(self.FRAME_NUM)+".png")
+        #     self.FRAME_NUM += 1
+        #     if self.VISION_ATTR:
+        #         for i in range(self.NUM_DRONES):
+        #             self.rgb[i], self.dep[i], self.seg[i] = self._getDroneImages(i)
+        #             #### Printing observation to PNG frames example ############
+        #             self._exportImage(img_type=ImageType.RGB, # ImageType.BW, ImageType.DEP, ImageType.SEG
+        #                             img_input=self.rgb[i],
+        #                             path=self.ONBOARD_IMG_PATH+"/drone_"+str(i)+"/",
+        #                             frame_num=int(self.step_counter/self.IMG_CAPTURE_FREQ)
+        #                             )
         #### Read the GUI's input parameters #######################
         if self.GUI and self.USER_DEBUG:
             current_input_switch = p.readUserDebugParameter(self.INPUT_SWITCH, physicsClientId=self.CLIENT)
