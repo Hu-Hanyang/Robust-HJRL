@@ -214,7 +214,7 @@ class HoverFixedDistbEnv(HoverDistbEnv):
     def __init__(self, *args,  **kwargs):  # distb_level=1.0, randomization_reset=False,
         # Set disturbance_type to 'fixed' regardless of the input
         kwargs['disturbance_type'] = 'fixed'
-        kwargs['distb_level'] = 1.0
+        kwargs['distb_level'] = 0.0
         kwargs['randomization_reset'] = True
         kwargs['record'] = True
         super().__init__(*args, **kwargs)  # distb_level=distb_level, randomization_reset=randomization_reset,
