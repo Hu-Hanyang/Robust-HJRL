@@ -1,5 +1,8 @@
 {   
+    "distb_type": "boltzmann",
+    "distb_level": 0.0,
     "n_envs": 16,  
+    "env_seed": 0, 
     "train_seed": 42,
     "batch_size": 64,
     "n_epochs": 15,

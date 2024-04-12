@@ -1,5 +1,5 @@
 import numpy as np
-from gym_pybullet_drones.envs.HoverDistb import HoverFixedDistbEnv
+from gym_pybullet_drones.envs.HoverDistb import HoverFixedDistbEnv, HoverBoltzmannDistbEnv
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3 import PPO
 import os 

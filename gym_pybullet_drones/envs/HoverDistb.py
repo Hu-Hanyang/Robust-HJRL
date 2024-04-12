@@ -24,7 +24,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
                  obs: ObservationType=ObservationType.KIN,
                  act: ActionType=ActionType.PWM, 
                  output_folder='results',
-                 randomization_reset=False
+                 randomization_reset=True
                  ):
         """Initialization of a single agent RL environment.
 
@@ -203,6 +203,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
         info['current_penalty'] = self.current_penalty
         info['current_dist'] = self.current_dist
         info['current_reward'] = self.current_reward
+        info['current_episode_distb_level'] = self.distb_level
         
         return info #### Calculated by the Deep Thought supercomputer in 7.5M years
 
@@ -213,8 +214,8 @@ class HoverFixedDistbEnv(HoverDistbEnv):
     def __init__(self, *args,  **kwargs):  # distb_level=1.0, randomization_reset=False,
         # Set disturbance_type to 'fixed' regardless of the input
         kwargs['disturbance_type'] = 'fixed'
-        kwargs['distb_level'] = 0.0
-        kwargs['randomization_reset'] = False
+        kwargs['distb_level'] = 1.0
+        kwargs['randomization_reset'] = True
         kwargs['record'] = True
         super().__init__(*args, **kwargs)  # distb_level=distb_level, randomization_reset=randomization_reset,
 

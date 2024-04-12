@@ -54,7 +54,6 @@ assert DEFAULT_DISTURBANCE_TYPE in ['fixed', 'boltzmann', 'random', 'rarl', 'rar
 DEFAULT_DISTURBANCE_LEVEL = 0.0
 
 
-#TODO: Hanyang: customized callback function which could validate the saved model immediately
 class ValidateCheckpointCallback(BaseCallback):
     """
     Callback for saving a model every ``save_freq`` calls
@@ -226,38 +225,50 @@ class CustomMonitor(Monitor):
     
     
 
-def train(distb_type='fixed', distb_level=0.0, seed=42,  multiagent=False, settings="training_settings.json"):
+def train(settings="training_fixed.json", multiagent=False):
+    
+    #### Load the training settings ###################################
+    with open(settings) as f:
+        training_data = json.load(f)
+        distb_type = training_data['distb_type']
+        n_env = training_data['n_envs']
+        env_seed = training_data['env_seed']
+        train_seed = training_data['train_seed']
+        batch_size = training_data['batch_size']
+        n_epochs = training_data['n_epochs']
+        n_steps = training_data['n_steps']
+        target_kl = training_data['target_kl']
+        total_timesteps = training_data['total_timesteps']
+    
+    env = HoverFixedDistbEnv()
+    randomization_reset = env.randomization_reset
+    distb_level = env.distb_level
     
     #### Make save path ###################################
     if distb_type == 'fixed' or None:
-        filename = os.path.join('training_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'seed_'+f"{seed}", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+        filename = os.path.join('training_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'seed_'+f"{train_seed}", 'save-'+f'intial_random_{randomization_reset}') 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('training_results_sb3/' + distb_type, 'seed_'+f"{seed}", 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        filename = os.path.join('training_results_sb3/' + distb_type, 'seed_'+f"{train_seed}", 'save-'+f'intial_random_{randomization_reset}') 
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
 
-    #### Load the training settings ###################################
-    with open(settings) as f:
-        data = json.load(f)
-        n_env = data['n_envs']
-        train_seed = data['train_seed']
-        batch_size = data['batch_size']
-        n_epochs = data['n_epochs']
-        n_steps = data['n_steps']
-        target_kl = data['target_kl']
-        total_timesteps = data['total_timesteps']
-
     shutil.copy(settings, filename)
+    # Read the existing data from the copied file
+    with open(f"{filename}/{settings}", 'r') as json_file:
+        data = json.load(json_file)
+    data.update({"randomization_reset": randomization_reset, "distb_level": distb_level})
+    # Write the updated dictionary back to the JSON file
+    with open(f"{filename}/{settings}", 'w') as json_file:
+        json.dump(data, json_file, indent=4)
     print(f"[INFO] Save the training settings at: {filename}/{settings}")
 
 
     #### Create the environment ################################
-    #TODO: Hanyang: remember to config the env everytime here in the class!!!!!
     if not multiagent:
         train_env = make_vec_env(HoverFixedDistbEnv,
                                  env_kwargs=dict(obs=DEFAULT_OBS, act=DEFAULT_ACT),
                                  n_envs=n_env,
-                                 seed=train_seed
+                                 seed=env_seed
                                  )
         # eval_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level,obs=DEFAULT_OBS, act=DEFAULT_ACT)
     else:
@@ -272,14 +283,13 @@ def train(distb_type='fixed', distb_level=0.0, seed=42,  multiagent=False, setti
     print('[INFO] Action space:', train_env.action_space)
     print('[INFO] Observation space:', train_env.observation_space)
     #### Train the model #######################################
-    # policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[50, 50], vf=[64, 64]), log_std_init=-1.5)
     model = PPO('MlpPolicy',
                 train_env,
                 batch_size=batch_size,
                 n_epochs=n_epochs,
                 n_steps=n_steps,
-                seed=seed,
-                target_kl=target_kl, # policy_kwargs=policy_kwargs,
+                seed=train_seed,
+                target_kl=target_kl, 
                 tensorboard_log=filename+'/tb/',
                 verbose=1)
 
@@ -301,7 +311,7 @@ def train(distb_type='fixed', distb_level=0.0, seed=42,  multiagent=False, setti
     #                         )
     
     checkpoint_callback = ValidateCheckpointCallback(
-                            save_freq=1e4,
+                            save_freq=1e5,
                             save_path=f"{filename}/train_logs/",
                             name_prefix="PPO",
                             save_replay_buffer=True,
@@ -439,7 +449,7 @@ if __name__ == '__main__':
     parser.add_argument('--distb_level',        default=0.0,          type=float,         help='Level of disturbance to be applied to the drones (default: 0.0)', metavar='')
     parser.add_argument('--seed',               default=40226,        type=int,           help='Seed for the random number generator (default: 40226)', metavar='')
     parser.add_argument('--multiagent',         default=False,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
-    parser.add_argument('--settings',           default="training_settings.json",        type=str,           help='The path to the training settings file (default: None)', metavar='')
+    parser.add_argument('--settings',           default="training_fixed.json",        type=str,           help='The path to the training settings file (default: None)', metavar='')
     parser.add_argument('--test_distb_type',    default="fixed",      type=str,           help='Type of disturbance in the test environment', metavar='')
     parser.add_argument('--test_distb_level',   default=0.0,          type=float,         help='Level of disturbance in the test environment', metavar='')
     parser.add_argument('--max_test_steps',     default=500,          type=int,           help='Maximum number of steps in the test environment', metavar='')
@@ -449,7 +459,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.task == "train":
-        train(distb_type=args.distb_type, distb_level=args.distb_level, seed=args.seed, multiagent=args.multiagent, settings=args.settings)
+        train(settings=args.settings, multiagent=args.multiagent)
     elif args.task == "test":
         # model_path = "traning_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.25_10:24/final_model.zip"
         model_path = "traning_results_sb3/fixed-distb_level_0.0/seed_40226/save-2024.03.24_23:42/final_model.zip"
