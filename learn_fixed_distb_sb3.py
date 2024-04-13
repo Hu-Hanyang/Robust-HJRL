@@ -144,7 +144,7 @@ class ValidateCheckpointCallback(BaseCallback):
         validate_model = PPO.load(model_path)
 
         #### Make save path ###################################
-        validate_result = os.path.dirname(model_path) + f'/validate_{model_path}'
+        validate_result = os.path.dirname(model_path) + f'/validations/'
         if not os.path.exists(validate_result):
             os.makedirs(validate_result+'/')
         

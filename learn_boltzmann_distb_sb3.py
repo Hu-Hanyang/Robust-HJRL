@@ -460,7 +460,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.task == "train":
-        train(settings=args.settings, multiagent=args.multiagent)
+        train(settings=args.settings, multiagent=args.multiagent, )
     elif args.task == "test":
         # model_path = "traning_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.25_10:24/final_model.zip"
         model_path = "traning_results_sb3/fixed-distb_level_0.0/seed_40226/save-2024.03.24_23:42/final_model.zip"
