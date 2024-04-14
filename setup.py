@@ -20,7 +20,7 @@ setuptools.setup(
     ],
     tests_require=['nose'],
     packages=setuptools.find_packages(),
-    python_requires=">=3.8",
+    # python_requires=">=3.8",
     include_package_data=True,
     # install_requires=[
     #     'numpy',

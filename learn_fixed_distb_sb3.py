@@ -45,7 +45,7 @@ DEFAULT_RECORD_VIDEO = True
 DEFAULT_COLAB = False
 
 DEFAULT_OBS = ObservationType('kin') # 'kin' or 'rgb'
-DEFAULT_ACT = ActionType('pwm') # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid' 'pwm' #TODO: check here!
+DEFAULT_ACT = ActionType('pwm') # 'rpm' or 'pid' or 'vel' or 'one_d_rpm' or 'one_d_pid' 'pwm'
 DEFAULT_AGENTS = 2
 DEFAULT_MA = False
 
