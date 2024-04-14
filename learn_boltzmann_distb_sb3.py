@@ -54,7 +54,6 @@ assert DEFAULT_DISTURBANCE_TYPE in ['fixed', 'boltzmann', 'random', 'rarl', 'rar
 DEFAULT_DISTURBANCE_LEVEL = 0.0
 
 
-#TODO: Hanyang: customized callback function which could validate the saved model immediately
 class ValidateCheckpointCallback(BaseCallback):
     """
     Callback for saving a model every ``save_freq`` calls
@@ -270,46 +269,27 @@ def train(settings="training_boltzmann.json", multiagent=False):
                                  n_envs=n_env,
                                  seed=env_seed
                                  )
-        # eval_env = HoverDistbEnv(disturbance_type=distb_type, distb_level=distb_level,obs=DEFAULT_OBS, act=DEFAULT_ACT)
     else:
         train_env = make_vec_env(MultiHoverAviary,
                                  env_kwargs=dict(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT),
                                  n_envs=1,
                                  seed=0
                                  )
-        # eval_env = MultiHoverAviary(num_drones=DEFAULT_AGENTS, obs=DEFAULT_OBS, act=DEFAULT_ACT)
 
     #### Check the environment's spaces ########################
     print('[INFO] Action space:', train_env.action_space)
     print('[INFO] Observation space:', train_env.observation_space)
     #### Train the model #######################################
-    # policy_kwargs = dict(activation_fn=torch.nn.ReLU, net_arch=dict(pi=[50, 50], vf=[64, 64]), log_std_init=-1.5)
     model = PPO('MlpPolicy',
                 train_env,
                 batch_size=batch_size,
                 n_epochs=n_epochs,
                 n_steps=n_steps,
                 seed=train_seed,
-                target_kl=target_kl,  # policy_kwargs=policy_kwargs,
+                target_kl=target_kl, 
                 tensorboard_log=filename+'/tb/',
                 verbose=1)
 
-    # #### Target cumulative rewards (problem-dependent) ##########
-    # if DEFAULT_ACT == ActionType.ONE_D_RPM:
-    #     target_reward = 474.15 if not multiagent else 949.5
-    # else:
-    #     target_reward = 467. if not multiagent else 920.
-    # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
-    #                                                  verbose=1)
-
-    #TODO: test the customized wrapper
-    # checkpoint_callback = CheckpointCallback(
-    #                         save_freq=1e4,
-    #                         save_path=f"{filename}/train_logs/",
-    #                         name_prefix="PPO",
-    #                         save_replay_buffer=True,
-    #                         save_vecnormalize=True,
-    #                         )
     
     checkpoint_callback = ValidateCheckpointCallback(
                             save_freq=2e4,
@@ -325,15 +305,6 @@ def train(settings="training_boltzmann.json", multiagent=False):
     tensorboard_callback = TensorboardCallback()
     train_callback = CallbackList([checkpoint_callback, tensorboard_callback])
     
-    # eval_callback = EvalCallback(eval_env,
-    #                              callback_on_new_best=callback_on_best,
-    #                              verbose=1,
-    #                              best_model_save_path=filename+'/',
-    #                              log_path=filename+'/',
-    #                              eval_freq=int(1000),
-    #                              deterministic=True,
-    #                              render=False)
-    
     #### Train the model #######################################
     print("Start training")
     start_time = time.perf_counter()
@@ -344,29 +315,6 @@ def train(settings="training_boltzmann.json", multiagent=False):
     print(filename)
     duration = time.perf_counter() - start_time
     print(f"The time of training is {duration//3600}hours-{(duration%3600)//60}minutes-{(duration%3600)%60}seconds. \n")
-    
-
-    # #### Print training progression ############################
-    # with np.load(filename+'/evaluations.npz') as data:
-    #     for j in range(data['timesteps'].shape[0]):
-    #         print(str(data['timesteps'][j])+","+str(data['results'][j][0]))
-
-    ############################################################
-    ############################################################
-    ############################################################
-    ############################################################
-    ############################################################
-
-    # # if local:
-    # #     input("Press Enter to continue...")
-
-    # # if os.path.isfile(filename+'/final_model.zip'):
-    # #     path = filename+'/final_model.zip'
-    # if os.path.isfile(filename+'/best_model.zip'):
-    #     path = filename+'/best_model.zip'
-    # else:
-    #     print("[ERROR]: no model under the specified path", filename)
-    # model = PPO.load(path)
 
 
 def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_test_steps=500,  num_videos=2, fps=20):
@@ -415,12 +363,6 @@ def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_tes
 def generate_videos(frames, save_path, idx, fps):
     # Initialize video writer
     video_path = f'{save_path}/output{idx}.mp4'
-    # out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frames[0].shape[1], frames[0].shape[0]))
-    # # Write each frame to the video
-    # for frame in frames:
-    #     # Convert RGBA to BGR
-    #     bgr_frame = cv2.cvtColor((frame * 255).astype(np.uint8), cv2.COLOR_RGBA2BGR)
-    #     out.write(bgr_frame)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs as well (e.g., 'XVID')
     out = cv2.VideoWriter(video_path, fourcc, fps, (frames[0].shape[1], frames[0].shape[0]))
 
@@ -432,12 +374,13 @@ def generate_videos(frames, save_path, idx, fps):
     out.release()
     print(f"[INFO] The video {idx} is saved as: {video_path}.")
 
+
 # Function to create GIF
 def generate_gifs(frames, save_path, idx, duration=0.1):
     images = []
     for frame in frames:
         images.append(frame.astype(np.uint8))  # Convert to uint8 for imageio
-    imageio.mimsave(f'{save_path}/gif{idx}.gif', images, duration=duration)
+    imageio.mimsave(f'{save_path}/gif{idx+1}.gif', images, duration=duration)
 
 
 
@@ -445,11 +388,11 @@ if __name__ == '__main__':
     #### Define and parse (optional) arguments for the script ##
     parser = argparse.ArgumentParser(description='Single agent reinforcement learning example script')
 
-    parser.add_argument('--task',               default="train",      type=str,           help='Select whether to train or test with render')
-    parser.add_argument('--distb_type',         default="boltzmann",      type=str,           help='Type of disturbance to be applied to the drones [None, "fixed", "boltzmann", "random", "rarl", "rarl-population"] (default: "fixed")', metavar='')
-    parser.add_argument('--distb_level',        default=0.0,          type=float,         help='Level of disturbance to be applied to the drones (default: 0.0)', metavar='')
-    parser.add_argument('--seed',               default=40226,        type=int,           help='Seed for the random number generator (default: 40226)', metavar='')
+    parser.add_argument('--train_distb_type',         default="boltzmann",      type=str,           help='Type of disturbance to be applied to the drones [None, "fixed", "boltzmann", "random", "rarl", "rarl-population"] (default: "fixed")', metavar='')
+    parser.add_argument('--train_distb_level',        default=0.0,          type=float,         help='Level of disturbance to be applied to the drones (default: 0.0)', metavar='')
+    parser.add_argument('--train_seed',               default=40226,        type=int,           help='Seed for the random number generator (default: 40226)', metavar='')
     parser.add_argument('--multiagent',         default=False,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
+    parser.add_argument('--randomization_reset',         default=True,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
     parser.add_argument('--settings',           default="training_boltzmann.json",        type=str,           help='The path to the training settings file (default: None)', metavar='')
     parser.add_argument('--test_distb_type',    default="fixed",      type=str,           help='Type of disturbance in the test environment', metavar='')
     parser.add_argument('--test_distb_level',   default=0.0,          type=float,         help='Level of disturbance in the test environment', metavar='')
@@ -459,11 +402,4 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
-    if args.task == "train":
-        train(settings=args.settings, multiagent=args.multiagent, )
-    elif args.task == "test":
-        # model_path = "traning_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.25_10:24/final_model.zip"
-        model_path = "traning_results_sb3/fixed-distb_level_0.0/seed_40226/save-2024.03.24_23:42/final_model.zip"
-        test(test_distb_type=args.test_distb_type, test_distb_level=args.test_distb_level, 
-             model_path=model_path, max_test_steps=args.max_test_steps, 
-             num_videos=args.num_videos, fps=args.fps)
+    train(settings=args.settings, multiagent=args.multiagent)

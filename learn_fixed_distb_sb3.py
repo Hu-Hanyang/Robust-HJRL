@@ -293,22 +293,6 @@ def train(settings="training_fixed.json", multiagent=False):
                 tensorboard_log=filename+'/tb/',
                 verbose=1)
 
-    # #### Target cumulative rewards (problem-dependent) ##########
-    # if DEFAULT_ACT == ActionType.ONE_D_RPM:
-    #     target_reward = 474.15 if not multiagent else 949.5
-    # else:
-    #     target_reward = 467. if not multiagent else 920.
-    # callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=target_reward,
-    #                                                  verbose=1)
-
-    #TODO: test the customized wrapper
-    # checkpoint_callback = CheckpointCallback(
-    #                         save_freq=1e4,
-    #                         save_path=f"{filename}/train_logs/",
-    #                         name_prefix="PPO",
-    #                         save_replay_buffer=True,
-    #                         save_vecnormalize=True,
-    #                         )
     
     checkpoint_callback = ValidateCheckpointCallback(
                             save_freq=2e4,
@@ -324,15 +308,6 @@ def train(settings="training_fixed.json", multiagent=False):
     tensorboard_callback = TensorboardCallback()
     train_callback = CallbackList([checkpoint_callback, tensorboard_callback])
     
-    # eval_callback = EvalCallback(eval_env,
-    #                              callback_on_new_best=callback_on_best,
-    #                              verbose=1,
-    #                              best_model_save_path=filename+'/',
-    #                              log_path=filename+'/',
-    #                              eval_freq=int(1000),
-    #                              deterministic=True,
-    #                              render=False)
-    
     #### Train the model #######################################
     print("Start training")
     start_time = time.perf_counter()
@@ -343,40 +318,11 @@ def train(settings="training_fixed.json", multiagent=False):
     print(filename)
     duration = time.perf_counter() - start_time
     print(f"The time of training is {duration//3600}hours-{(duration%3600)//60}minutes-{(duration%3600)%60}seconds. \n")
-    
-
-    # #### Print training progression ############################
-    # with np.load(filename+'/evaluations.npz') as data:
-    #     for j in range(data['timesteps'].shape[0]):
-    #         print(str(data['timesteps'][j])+","+str(data['results'][j][0]))
-
-    ############################################################
-    ############################################################
-    ############################################################
-    ############################################################
-    ############################################################
-
-    # # if local:
-    # #     input("Press Enter to continue...")
-
-    # # if os.path.isfile(filename+'/final_model.zip'):
-    # #     path = filename+'/final_model.zip'
-    # if os.path.isfile(filename+'/best_model.zip'):
-    #     path = filename+'/best_model.zip'
-    # else:
-    #     print("[ERROR]: no model under the specified path", filename)
-    # model = PPO.load(path)
 
 
 def generate_videos(frames, save_path, idx, fps):
     # Initialize video writer
     video_path = f'{save_path}/output{idx}.mp4'
-    # out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frames[0].shape[1], frames[0].shape[0]))
-    # # Write each frame to the video
-    # for frame in frames:
-    #     # Convert RGBA to BGR
-    #     bgr_frame = cv2.cvtColor((frame * 255).astype(np.uint8), cv2.COLOR_RGBA2BGR)
-    #     out.write(bgr_frame)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs as well (e.g., 'XVID')
     out = cv2.VideoWriter(video_path, fourcc, fps, (frames[0].shape[1], frames[0].shape[0]))
 
