@@ -388,18 +388,8 @@ if __name__ == '__main__':
     #### Define and parse (optional) arguments for the script ##
     parser = argparse.ArgumentParser(description='Single agent reinforcement learning example script')
 
-    parser.add_argument('--train_distb_type',         default="boltzmann",      type=str,           help='Type of disturbance to be applied to the drones [None, "fixed", "boltzmann", "random", "rarl", "rarl-population"] (default: "fixed")', metavar='')
-    parser.add_argument('--train_distb_level',        default=0.0,          type=float,         help='Level of disturbance to be applied to the drones (default: 0.0)', metavar='')
-    parser.add_argument('--train_seed',               default=40226,        type=int,           help='Seed for the random number generator (default: 40226)', metavar='')
     parser.add_argument('--multiagent',         default=False,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
-    parser.add_argument('--randomization_reset',         default=True,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
     parser.add_argument('--settings',           default="training_boltzmann.json",        type=str,           help='The path to the training settings file (default: None)', metavar='')
-    parser.add_argument('--test_distb_type',    default="fixed",      type=str,           help='Type of disturbance in the test environment', metavar='')
-    parser.add_argument('--test_distb_level',   default=0.0,          type=float,         help='Level of disturbance in the test environment', metavar='')
-    parser.add_argument('--max_test_steps',     default=500,          type=int,           help='Maximum number of steps in the test environment', metavar='')
-    parser.add_argument('--num_videos',         default=2,            type=int,           help='Number of videos to generate in the test environment', metavar='')
-    parser.add_argument('--fps',                default=50,           type=int,           help='Frames per second in the generated videos', metavar='')
-    
     args = parser.parse_args()
 
     train(settings=args.settings, multiagent=args.multiagent)
