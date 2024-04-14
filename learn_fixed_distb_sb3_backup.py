@@ -357,23 +357,30 @@ def train(distb_type='fixed', distb_level=0.0, seed=42,  multiagent=False, setti
     #     print("[ERROR]: no model under the specified path", filename)
     # model = PPO.load(path)
 
+# Hanyang: revise the new test function
+def test(train_distb_type='fixed', train_distb_level=1.0, train_seed=42, randomization_reset=True, test_distb_type='fixed', test_distb_level=0.0,  max_test_steps=500,  num_videos=2):
 
-def test(test_distb_type='fixed', test_distb_level=0.0, model_path=None, max_test_steps=500,  num_videos=2, fps=20):
     #### Load the trained model ###################################
-    assert model_path is not None, f"[ERROR] The model {model} does not exist, please check the loading path."
-    model = PPO.load(model_path)
+    if train_distb_type == 'fixed' or None:
+        trained_model = f"training_results_sb3/fixed-distb_level_{train_distb_level}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip"
+    else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
+        trained_model = f"training_results_sb3/{train_distb_type}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip" 
+    assert os.path.exists(trained_model), f"[ERROR] The trained model {trained_model} does not exist, please check the loading path or train one first."
+    
+    model = PPO.load(trained_model)
+    #TODO: Hanyang: not finished yet
+    #### Create the environment ################################
+    env = HoverFixedDistbEnv(disturbance_type=test_distb_type, distb_level=test_distb_level, record=True, randomization_reset=randomization_reset)
 
     #### Make save path ###################################
     if test_distb_type == 'fixed' or None:
-        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', 'save-'++f'intial_random_{randomization_reset}') 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('test_results_sb3/' + test_distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        filename = os.path.join('test_results_sb3/' + test_distb_type, 'save-'+f'intial_random_{randomization_reset}')
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
-    print(f"[INFO] Save the test videos at: {filename}")
+    print(f"[INFO] Save the test videos (GIFs) at: {filename}")
 
-    #### Create the environment ################################
-    env = HoverFixedDistbEnv(disturbance_type=test_distb_type, distb_level=test_distb_level, record=True, randomization_reset=False)
     # print(env.OUTPUT_FOLDER)
     frames = [[] for _ in range(num_videos)]
     num = 0

@@ -1,6 +1,10 @@
 {
     "distb_type": "boltzmann",
+<<<<<<< HEAD
     "distb_level": 0.6,
+=======
+    "distb_level": 0.8,
+>>>>>>> 885d36addf5a7b0df7ff0c19883f91a274761f88
     "n_envs": 16,
     "env_seed": 0,
     "train_seed": 42,
