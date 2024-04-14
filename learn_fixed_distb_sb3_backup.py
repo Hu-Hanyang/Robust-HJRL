@@ -358,15 +358,15 @@ def train(distb_type='fixed', distb_level=0.0, seed=42,  multiagent=False, setti
     # model = PPO.load(path)
 
 # Hanyang: revise the new test function
-def test(test_distb_type='fixed', test_distb_level=0.0, train_seed=42, randomization_reset=True, max_test_steps=500,  num_videos=2, fps=20):
+def test(train_distb_type='fixed', train_distb_level=1.0, train_seed=42, randomization_reset=True, test_distb_type='fixed', test_distb_level=0.0,  max_test_steps=500,  num_videos=2):
 
     #### Load the trained model ###################################
-    if test_distb_type == 'fixed' or None:
-        trained_model = f"training_results_sb3/fixed-distb_level_{test_distb_level}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip"
+    if train_distb_type == 'fixed' or None:
+        trained_model = f"training_results_sb3/fixed-distb_level_{train_distb_level}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip"
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        trained_model = f"training_results_sb3/{test_distb_type}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip" 
-
+        trained_model = f"training_results_sb3/{train_distb_type}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip" 
     assert os.path.exists(trained_model), f"[ERROR] The trained model {trained_model} does not exist, please check the loading path or train one first."
+    
     model = PPO.load(trained_model)
     #TODO: Hanyang: not finished yet
     #### Create the environment ################################
@@ -374,14 +374,13 @@ def test(test_distb_type='fixed', test_distb_level=0.0, train_seed=42, randomiza
 
     #### Make save path ###################################
     if test_distb_type == 'fixed' or None:
-        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M")) 
+        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', 'save-'++f'intial_random_{randomization_reset}') 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('test_results_sb3/' + test_distb_type, 'save-'+datetime.now().strftime("%Y.%m.%d_%H:%M"))
+        filename = os.path.join('test_results_sb3/' + test_distb_type, 'save-'+f'intial_random_{randomization_reset}')
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
-    print(f"[INFO] Save the test videos at: {filename}")
+    print(f"[INFO] Save the test videos (GIFs) at: {filename}")
 
-    
     # print(env.OUTPUT_FOLDER)
     frames = [[] for _ in range(num_videos)]
     num = 0
