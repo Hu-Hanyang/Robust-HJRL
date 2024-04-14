@@ -1,0 +1,13 @@
+{
+    "distb_type": "fixed",
+    "n_envs": 16,
+    "env_seed": 0,
+    "train_seed": 42,
+    "batch_size": 64,
+    "n_epochs": 15,
+    "n_steps": 2048,
+    "target_kl": 0.01,
+    "total_timesteps": 10000000.0,
+    "randomization_reset": true,
+    "distb_level": 0.0
+}
