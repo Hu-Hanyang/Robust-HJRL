@@ -312,7 +312,7 @@ def train(settings="training_boltzmann.json", multiagent=False):
     #                         )
     
     checkpoint_callback = ValidateCheckpointCallback(
-                            save_freq=1e5,
+                            save_freq=2e4,
                             save_path=f"{filename}/train_logs/",
                             name_prefix="PPO",
                             save_replay_buffer=True,

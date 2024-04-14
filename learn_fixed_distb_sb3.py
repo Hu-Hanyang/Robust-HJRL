@@ -246,9 +246,9 @@ def train(settings="training_fixed.json", multiagent=False):
     
     #### Make save path ###################################
     if distb_type == 'fixed' or None:
-        filename = os.path.join('training_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'seed_'+f"{train_seed}", 'save-'+f'intial_random_{randomization_reset}') 
+        filename = os.path.join('training_results_sb3/' + 'fixed'+'-'+f'distb_level_{distb_level}', 'seed_'+f"{train_seed}", 'save-'+f'initial_random_{randomization_reset}') 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('training_results_sb3/' + distb_type, 'seed_'+f"{train_seed}", 'save-'+f'intial_random_{randomization_reset}') 
+        filename = os.path.join('training_results_sb3/' + distb_type, 'seed_'+f"{train_seed}", 'save-'+f'initial_random_{randomization_reset}') 
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
 
@@ -311,7 +311,7 @@ def train(settings="training_fixed.json", multiagent=False):
     #                         )
     
     checkpoint_callback = ValidateCheckpointCallback(
-                            save_freq=1e5,
+                            save_freq=2e4,
                             save_path=f"{filename}/train_logs/",
                             name_prefix="PPO",
                             save_replay_buffer=True,
