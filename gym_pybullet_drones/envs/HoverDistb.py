@@ -92,7 +92,7 @@ class HoverDistbEnv(BaseDistbRLEnv):
         self.current_reward = 0.0 # Hanyang: log the current reward
 
         # Print the environment info
-        print(f" \n The HoverDistbEnv is with {disturbance_type} distb type and {distb_level} distb level. \n")
+        # print(f" \n The HoverDistbEnv is with {disturbance_type} distb type and {distb_level} distb level. \n")
 
     ################################################################################
     

@@ -45,9 +45,9 @@ def test(train_distb_type, train_distb_level, train_seed, randomization_reset,
 
     #### Load the trained model ###################################
     if train_distb_type == 'fixed' or None:
-        trained_model = f"training_results_sb3/fixed-distb_level_{train_distb_level}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip"
+        trained_model = f"training_results_sb3/fixed-distb_level_{train_distb_level}/seed_{train_seed}/save-initial_random_{randomization_reset}/final_model.zip"
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        trained_model = f"training_results_sb3/{train_distb_type}/seed_{train_seed}/save-intial_random_{randomization_reset}/final_model.zip" 
+        trained_model = f"training_results_sb3/{train_distb_type}/seed_{train_seed}/save-initial_random_{randomization_reset}/final_model.zip" 
     assert os.path.exists(trained_model), f"[ERROR] The trained model {trained_model} does not exist, please check the loading path or train one first."
     
     model = PPO.load(trained_model)
@@ -58,9 +58,9 @@ def test(train_distb_type, train_distb_level, train_seed, randomization_reset,
     
     #### Make save path ###################################
     if test_distb_type == 'fixed' or None:
-        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', f'using-{train_distb_type}-distb_level_{train_distb_level}_model', f'intial_random_{randomization_reset}') 
+        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', f'using-{train_distb_type}-distb_level_{train_distb_level}_model', f'initial_random_{randomization_reset}') 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('test_results_sb3/' + test_distb_type, f'using-{train_distb_type}_model', f'intial_random_{randomization_reset}')
+        filename = os.path.join('test_results_sb3/' + test_distb_type, f'using-{train_distb_type}_model', f'initial_random_{randomization_reset}')
     if not os.path.exists(filename):
         os.makedirs(filename+'/')
     print(f"[INFO] Save the test videos (GIFs) at: {filename}")
@@ -125,12 +125,11 @@ if __name__ == '__main__':
     #### Define and parse (optional) arguments for the script ##
     parser = argparse.ArgumentParser(description='Single agent reinforcement learning example script')
 
-    parser.add_argument('--train_distb_type',         default="fixed",      type=str,           help='Type of disturbance to be applied to the drones [None, "fixed", "boltzmann", "random", "rarl", "rarl-population"] (default: "fixed")', metavar='')
+    parser.add_argument('--train_distb_type',         default="boltzmann",      type=str,           help='Type of disturbance to be applied to the drones [None, "fixed", "boltzmann", "random", "rarl", "rarl-population"] (default: "fixed")', metavar='')
     parser.add_argument('--train_distb_level',        default=0.0,          type=float,         help='Level of disturbance to be applied to the drones (default: 0.0)', metavar='')
     parser.add_argument('--train_seed',               default=42,        type=int,           help='Seed for the random number generator (default: 40226)', metavar='')
     parser.add_argument('--multiagent',         default=False,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
     parser.add_argument('--randomization_reset',         default=True,        type=str2bool,      help='Whether to use example LeaderFollower instead of Hover (default: False)', metavar='')
-    parser.add_argument('--settings',           default="training_fixed.json",        type=str,           help='The path to the training settings file (default: None)', metavar='')
     parser.add_argument('--test_distb_type',    default="fixed",      type=str,           help='Type of disturbance in the test environment', metavar='')
     parser.add_argument('--test_distb_level',   default=1.0,          type=float,         help='Level of disturbance in the test environment', metavar='')
     parser.add_argument('--max_test_steps',     default=500,          type=int,           help='Maximum number of steps in the test environment', metavar='')
@@ -142,3 +141,5 @@ if __name__ == '__main__':
     test(train_distb_type=args.train_distb_type, train_distb_level=args.train_distb_level, train_seed=args.train_seed, 
          randomization_reset=args.randomization_reset, test_distb_type=args.test_distb_type, test_distb_level=args.test_distb_level, 
          max_test_steps=args.max_test_steps, num_videos=args.num_videos)
+
+    # python test.py --train_distb_type boltzmann --train_seed 42 --test_distb_type fixed --test_distb_level 1.0 --max_test_steps 500 --num_videos 3
