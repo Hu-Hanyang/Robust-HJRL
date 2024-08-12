@@ -31,8 +31,6 @@ from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewar
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.utils import obs_as_tensor, safe_mean, set_random_seed
 from stable_baselines3.common.monitor import Monitor
-
-
 from gym_pybullet_drones.utils.Logger import Logger
 from gym_pybullet_drones.envs.HoverDistb import HoverFixedDistbEnv
 from gym_pybullet_drones.envs.MultiHoverAviary import MultiHoverAviary
@@ -40,8 +38,27 @@ from gym_pybullet_drones.utils.utils import sync, str2bool
 from gym_pybullet_drones.utils.enums import ObservationType, ActionType
 
 
+def play_after_training(model, env):
+    i = 0
+    while True:
+        terminated, truncated = False, False
+        rewards = 0.0
+        steps = 0
+        env.render()
+        obs, info = env.reset()
+        
+        while not terminated and not truncated:
+            action, _ = model.predict(obs, deterministic=False)
+            obs, reward, terminated, truncated, info = env.step(action)
+            rewards += reward
+            steps += 1
+
+        i += 1
+        print(f'Episode {i}: Length: {steps}\t Rewards: {rewards}.')    
+   
+
 def test(train_distb_type, train_distb_level, train_seed, randomization_reset, 
-         test_distb_type, test_distb_level,  max_test_steps,  num_videos):
+         test_distb_type, test_distb_level,  max_test_steps,  num_videos, show):
 
     #### Load the trained model ###################################
     if train_distb_type == 'fixed' or None:
@@ -49,7 +66,6 @@ def test(train_distb_type, train_distb_level, train_seed, randomization_reset,
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
         trained_model = f"training_results_sb3/{train_distb_type}/seed_{train_seed}/save-initial_random_{randomization_reset}/final_model.zip" 
     assert os.path.exists(trained_model), f"[ERROR] The trained model {trained_model} does not exist, please check the loading path or train one first."
-    
     model = PPO.load(trained_model)
     
     #### Create the environment ################################
@@ -58,58 +74,68 @@ def test(train_distb_type, train_distb_level, train_seed, randomization_reset,
     
     #### Make save path ###################################
     if test_distb_type == 'fixed' or None:
-        filename = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', f'using-{train_distb_type}-distb_level_{train_distb_level}_model', f'initial_random_{randomization_reset}') 
+        foldername = os.path.join('test_results_sb3/' + 'fixed'+'-'+f'distb_level_{test_distb_level}', f'using-{train_distb_type}-distb_level_{train_distb_level}_model', f'initial_random_{randomization_reset}') 
     else:  # 'boltzmann', 'random', 'rarl', 'rarl-population'
-        filename = os.path.join('test_results_sb3/' + test_distb_type, f'using-{train_distb_type}_model', f'initial_random_{randomization_reset}')
-    if not os.path.exists(filename):
-        os.makedirs(filename+'/')
-    print(f"[INFO] Save the test videos (GIFs) at: {filename}")
+        foldername = os.path.join('test_results_sb3/' + test_distb_type, f'using-{train_distb_type}_model', f'initial_random_{randomization_reset}')
+    if not os.path.exists(foldername):
+        os.makedirs(foldername+'/')
+    print(f"[INFO] Save the test videos (or GIFs) at: {foldername}")
 
-    frames = [[] for _ in range(num_videos)]
-    num = 0
-    
-    while num < num_videos:
-        terminated, truncated = False, False
-        rewards = 0.0
-        steps = 0
-        obs, info = env.reset()
-        frames[num].append(env.get_CurrentImage())  # the return frame is np.reshape(rgb, (h, w, 4))
-        
-        for step in range(max_test_steps):
-            action, _ = model.predict(obs, deterministic=False)
-            # print(f"The current action {step} is {action}")
-            obs, reward, terminated, truncated, info = env.step(action)
-            frames[num].append(env.get_CurrentImage())
-            rewards += reward
-            steps += 1
+    #### Test the trained model ################################
+    if not show:
+        frames = [[] for _ in range(num_videos)]
+        num = 0
+        np.random.seed(42)
+        while num < num_videos:
+            terminated, truncated = False, False
+            rewards = 0.0
+            steps = 0
+            obs, info = env.reset()
+            frames[num].append(env.get_CurrentImage())  # the return frame is np.reshape(rgb, (h, w, 4))
             
-            if terminated or truncated or steps>=max_test_steps:
-                print(f"[INFO] Test {num+1} is terminated or truncated with rewards = {rewards} and {steps} steps.")
-                # generate_videos(frames[num], filename, num, fps)
-                generate_gifs(frames[num], filename, num)
-                num += 1
-                break
+            for step in range(max_test_steps):
+                action, _ = model.predict(obs, deterministic=False)
+                # print(f"The current action {step} is {action}")
+                obs, reward, terminated, truncated, info = env.step(action)
+                frames[num].append(env.get_CurrentImage())
+                rewards += reward
+                steps += 1
+                
+                if terminated or truncated or steps>=max_test_steps:
+                    print(f"[INFO] Test {num+1} is terminated or truncated with rewards = {rewards} and {steps} steps.")
+                    # generate_videos(frames[num], filename, num, fps)
+                    # generate_gifs(frames[num], filename, num)
+                    generate_videos(frames[num], foldername, num)
+                    num += 1
+                    break
+    else:
+        #TODO: display the videos not implemented yet
+        play_after_training(model, env)
 
 
-def generate_videos(frames, save_path, idx, fps):
-    # Initialize video writer
-    video_path = f'{save_path}/output{idx}.mp4'
-    # out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frames[0].shape[1], frames[0].shape[0]))
-    # # Write each frame to the video
-    # for frame in frames:
-    #     # Convert RGBA to BGR
-    #     bgr_frame = cv2.cvtColor((frame * 255).astype(np.uint8), cv2.COLOR_RGBA2BGR)
-    #     out.write(bgr_frame)
+def generate_videos(images, foldername, idx):
+    """Hanyang
+    Input:
+        images: list, a list contains a sequence of numpy ndarrays
+        env: the quadrotor and task environment
+    """
+    # Define the output video parameters
+    fps = 50  # Frames per second
+    frame_width = 1920
+    frame_height = 1080
+    filename = f'episode{idx+1}_{len(images)}_{time.strftime("%Y_%m_%d_%H_%M")}.mp4'
+
+    # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs as well (e.g., 'XVID')
-    out = cv2.VideoWriter(video_path, fourcc, fps, (frames[0].shape[1], frames[0].shape[0]))
+    out = cv2.VideoWriter(foldername+'/'+filename, fourcc, fps, (frame_width, frame_height))
 
     # Write frames to the video file
-    for image in frames:
+    for image in images:
         image = np.asarray(image, dtype=np.uint8)
         out.write(image)
-    # Release video writer
+        
+    print(f"The video is saved at {filename}.")
     out.release()
-    print(f"[INFO] The video {idx} is saved as: {video_path}.")
 
 
 # Function to create GIF
@@ -134,12 +160,13 @@ if __name__ == '__main__':
     parser.add_argument('--test_distb_level',   default=1.0,          type=float,         help='Level of disturbance in the test environment', metavar='')
     parser.add_argument('--max_test_steps',     default=500,          type=int,           help='Maximum number of steps in the test environment', metavar='')
     parser.add_argument('--num_videos',         default=3,            type=int,           help='Number of videos to generate in the test environment', metavar='')
-    parser.add_argument('--fps',                default=50,           type=int,           help='Frames per second in the generated videos', metavar='')
+    parser.add_argument('--show',              default=False,         type=str2bool,          help='Display the videos or not', metavar='')
+
     
     args = parser.parse_args()
 
     test(train_distb_type=args.train_distb_type, train_distb_level=args.train_distb_level, train_seed=args.train_seed, 
          randomization_reset=args.randomization_reset, test_distb_type=args.test_distb_type, test_distb_level=args.test_distb_level, 
-         max_test_steps=args.max_test_steps, num_videos=args.num_videos)
+         max_test_steps=args.max_test_steps, num_videos=args.num_videos, show=args.show)
 
     # python test.py --train_distb_type boltzmann --train_seed 42 --test_distb_type fixed --test_distb_level 1.0 --max_test_steps 500 --num_videos 3

@@ -60,3 +60,10 @@ training_results_sb3/boltzmann/seed_42/save-2024.04.03_16:25
 
 #### 4.4 
 All failed.
+
+#### 4.10
+Bug solved: reset the distb level in the def step() function.
+
+The reason why the performance is not comparable with the one used in the disturbance-CrazyFlie-simulation is that:
+1. The lack of observation_noise
+2. The lack of motor_thrust_noise

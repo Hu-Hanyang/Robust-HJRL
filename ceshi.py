@@ -23,12 +23,12 @@ env = HoverFixedDistbEnv()
 print(env.observation_space)
 print(env.action_space)
 # print(env.randomization_reset)
-check_env(env)  #TODO: Not pass
+# check_env(env)  #TODO: Not pass
 # state.shape = (20,) state = [pos, quat, rpy, vel, ang_vel, last_clipped_action]
-# init_obs, init_info = env.reset()
+init_obs, init_info = env.reset()
 # print(f"The self.laset_clipped_action is {env.last_clipped_action} and its shape is {env.last_clipped_action.shape}")
 # print(f"The init_obs shape is {init_obs.shape} in line 28")
-# print(f"The initial xyz are {init_obs[0][0:3]} and its shape is {init_obs[0][0:3].shape}")
+print(f"The initial xyz are {init_obs[0][0:3]} and its shape is {init_obs[0][0:3].shape}")
 # print(f"The initial quaternion are {init_obs[0][3:7]} and its shape is {init_obs[0][3:7].shape}")
 # print(f"The initial xyz-velocities are {init_obs[0][10:13]} and its shape is {init_obs[0][10:13].shape}")
 # print(f"The initial rpy are {init_obs[0][7:10]}")
@@ -37,10 +37,10 @@ check_env(env)  #TODO: Not pass
 # print(f"The initial init_obs is {init_obs[0]}")
 # model = PPO.load("training_results_sb3/fixed-distb_level_1.0/seed_40226/save-2024.03.26_12:13/train_logs/PPO_6720000_steps.zip")
 
-# check performances
-print(f"The current env's disturbance level is {env.distb_level}")
-num_gifs = 1
-frames = [[] for _ in range(num_gifs)]
+# # check performances
+# print(f"The current env's disturbance level is {env.distb_level}")
+# num_gifs = 1
+# frames = [[] for _ in range(num_gifs)]
 
 
 # state = env._getDroneStateVector(0)

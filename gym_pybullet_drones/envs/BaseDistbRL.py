@@ -194,7 +194,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
         Returns
         -------
         ndarray
-            (NUM_DRONES, 4)-shaped array of ints containing to clipped RPMs
+            (NUM_DRONES, 4)-shaped array of ints containing to clipped PWMs
             commanded to the 4 motors of each drone.
 
         """
@@ -210,8 +210,7 @@ class BaseDistbRLEnv(BaseDistbEnv):
             if self.ACT_TYPE == ActionType.RPM:
                 rpm[k,:] = np.array(self.HOVER_RPM * (1+0.05*target))  # 88052 * (1+0.05* [-1 ,+1]) [83649.4, 92454.6]
                 # print(f"The RPM is {rpm[k,:]}")
-            # Hanyang: add PWM action type
-            # Just for usage, use varbiables rpm to store the PWM values
+            # Hanyang: add PWM action type, just for naming convenience, use varbiables rpm to store the PWM values
             elif self.ACT_TYPE == ActionType.PWM:
                 for n in range(self.NUM_DRONES):
                     rpm[n, :] =  30000 + np.clip(action, -1, +1) * 30000  # PWM in [0, 60000]
@@ -376,3 +375,34 @@ class BaseDistbRLEnv(BaseDistbEnv):
             ############################################################
         else:
             print("[ERROR] in BaseDistbRLEnv._computeObs()")
+    
+    
+    def get_CurrentImage(self):
+        base_pos = [0, 0, 0]
+        all_states = self._computeObs()
+        base_pos = all_states[0][:3]
+        frame_width = 1920
+        frame_height = 1080
+
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(
+            cameraTargetPosition=base_pos,  # (0.0, 0.0, 0.0), 
+            distance=1.8, 
+            yaw=10, 
+            pitch=-20, 
+            roll=0, 
+            upAxisIndex=2,
+            physicsClientId=self.CLIENT)
+        
+        proj_matrix = p.computeProjectionMatrixFOV(
+            fov=60, aspect=float(frame_width)/frame_height,
+            nearVal=0.1, farVal=100.0)
+        
+        (w, h, rgb, dep, seg) = p.getCameraImage(
+        width = frame_width, height=frame_height, viewMatrix=view_matrix,
+            projectionMatrix=proj_matrix,
+            renderer=p.ER_BULLET_HARDWARE_OPENGL,
+            physicsClientId=self.CLIENT
+            )
+        rgb_array = np.array(rgb)
+        rgb_array = rgb_array[:, :, :3]
+        return rgb_array

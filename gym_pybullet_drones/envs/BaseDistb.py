@@ -393,7 +393,7 @@ class BaseDistbEnv(gym.Env):
         
             #### Step the simulation using the desired physics update ##
             for i in range (self.NUM_DRONES):
-                # Calculate each disturbances
+                # Hanyang: Calculate each disturbances
                 current_angles = quat2euler(self._getDroneStateVector(i)[3:7])  # quaternion
                 current_angle_rates = self._getDroneStateVector(i)[13:16]
                 current_state = np.concatenate((current_angles, current_angle_rates), axis=0)
@@ -569,7 +569,7 @@ class BaseDistbEnv(gym.Env):
                                               physicsClientId=self.CLIENT
                                               ) for i in range(self.NUM_DRONES)])
         
-        # Add some randomization to initial conditions
+        # Hanyang: Add some randomization to initial conditions
         if self.randomization_reset:
             for id in range(self.NUM_DRONES):
                 self.pos[id] += np.random.uniform(-self.init_xy_lim, self.init_xy_lim, 3)
@@ -802,8 +802,6 @@ class BaseDistbEnv(gym.Env):
                  disturbances, 
                  nth_drone
                  ):
-        # TODO: Add disturbances, done
-        # TODO: Need to compare the original control process (forces, torques = apply_action(action))
         """Base PyBullet physics implementation.
 
         Parameters
@@ -1106,7 +1104,6 @@ class BaseDistbEnv(gym.Env):
     def _normalizedActionToRPM(self,
                                action
                                ):
-        # TODO: compare this function with the original action preprocess
         """De-normalizes the [-1, 1] range to the [0, MAX_RPM] range.
 
         Parameters
@@ -1364,21 +1361,3 @@ class BaseDistbEnv(gym.Env):
             current_position + normalized_direction * step_size
         )  # Calculate the next step
         return next_step
-    
-    # Hanyang: add a function to get the current image numpy array
-    def get_CurrentImage(self):
-        [w, h, rgb, dep, seg] = p.getCameraImage(width=self.VID_WIDTH,
-                                                     height=self.VID_HEIGHT,
-                                                     shadow=1,
-                                                     viewMatrix=self.CAM_VIEW,
-                                                     projectionMatrix=self.CAM_PRO,
-                                                     renderer=p.ER_TINY_RENDERER,
-                                                     flags=p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX,
-                                                     physicsClientId=self.CLIENT
-                                                     )
-        frame = np.reshape(rgb, (h, w, 4))
-        rgb_image = frame[:, :, :3]
-        return rgb_image
-        
-        
-        
